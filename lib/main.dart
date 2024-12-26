@@ -1,23 +1,38 @@
-import 'package:exachanger_app/core/service_locator.dart';
-import 'package:exachanger_app/features/splashscreen/splashscreen.dart';
+import 'package:exachanger_app/core/observers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() async {
+import 'core/app.dart';
+import 'di/Injector.dart';
+
+void main() => runMain();
+
+Future<void> runMain() async {
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
+  await initSingletons();
+  provideDataSources();
+  provideRepositories();
+  provideUseCases();
 
-  // Setup dependencies
-  await setupDependencies();
+  // Setting Device Orientation
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
-  // Configure for development
-  toggleRepositories(true); // Use fake repositories
+  //status bar color
+  // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+  //   statusBarColor: AppColors.white,
+  //   statusBarBrightness: Brightness.light,
+  // ));
 
-  runApp(
-    ProviderScope(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: const Splashscreen(),
-      ),
-    ),
-  );
+  runApp(ProviderScope(
+    observers: [
+      Observers(),
+    ],
+    child: const MyApp(),
+  ));
 }
