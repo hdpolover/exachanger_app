@@ -2,6 +2,36 @@ import 'package:flutter/material.dart';
 
 import '/app/core/values/app_colors.dart';
 
+const extraSmallBodyTextStyle = TextStyle(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  color: AppColors.textColorPrimary,
+);
+
+const smallBodyTextStyle = TextStyle(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  color: AppColors.textColorPrimary,
+);
+
+const regularBodyTextStyle = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  color: AppColors.textColorPrimary,
+);
+
+const bigBodyTextStyle = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  color: AppColors.textColorPrimary,
+);
+
+const titleTextStyle = TextStyle(
+  fontSize: 24,
+  fontWeight: FontWeight.w600,
+  color: AppColors.textColorPrimary,
+);
+
 const centerTextStyle = TextStyle(
   fontSize: 28,
   fontWeight: FontWeight.bold,

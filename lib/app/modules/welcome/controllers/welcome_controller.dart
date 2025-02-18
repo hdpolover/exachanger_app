@@ -1,9 +1,14 @@
+import 'package:exachanger_get_app/app/core/base/base_controller.dart';
+import 'package:exachanger_get_app/app/data/model/metadata_model.dart';
+import 'package:exachanger_get_app/app/data/repository/metadata/metadata_repository.dart';
 import 'package:get/get.dart';
 
-class WelcomeController extends GetxController {
-  //TODO: Implement WelcomeController
+class WelcomeController extends BaseController {
+  final MetadataRepository _metadataRepository =
+      Get.find(tag: (MetadataRepository).toString());
 
-  final count = 0.obs;
+  final Rx<MetaDataModel?> metaData = Rx<MetaDataModel?>(null);
+
   @override
   void onInit() {
     super.onInit();
@@ -19,5 +24,13 @@ class WelcomeController extends GetxController {
     super.onClose();
   }
 
-  void increment() => count.value++;
+  void getWelcomeInfo() {
+    var service = _metadataRepository.getPageContent('onboarding-page');
+
+    callDataService(service, onSuccess: (data) {
+      metaData.value = data;
+    }, onError: (error) {
+      print(error);
+    });
+  }
 }

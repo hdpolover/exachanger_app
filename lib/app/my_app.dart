@@ -1,3 +1,4 @@
+import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get/get.dart';
@@ -40,6 +41,31 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         fontFamily: 'Manrope',
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+          focusColor: AppColors.colorPrimary,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: AppColors.colorPrimary),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          // text
+          hintStyle: labelStyle,
+          labelStyle: labelStyle,
+        ),
       ),
       debugShowCheckedModeBanner: false,
     );

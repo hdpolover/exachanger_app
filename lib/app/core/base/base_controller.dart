@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 
-import '/app/core/model/page_state.dart';
+import '../models/page_state.dart';
 import '/app/network/exceptions/api_exception.dart';
 import '/app/network/exceptions/app_exception.dart';
 import '/app/network/exceptions/json_format_exception.dart';

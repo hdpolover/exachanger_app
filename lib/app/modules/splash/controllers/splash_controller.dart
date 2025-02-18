@@ -1,3 +1,5 @@
+import 'package:exachanger_get_app/app/modules/welcome/controllers/welcome_controller.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../../core/base/base_controller.dart';
@@ -8,8 +10,20 @@ class SplashController extends BaseController {
   void onInit() {
     super.onInit();
 
-    Future.delayed(Duration(seconds: 2), () {
-      Get.offNamed(Routes.WELCOME);
+    // get metadata
+    var metadataController = Get.find<WelcomeController>();
+
+    metadataController.getWelcomeInfo();
+
+    // Simplified ever listener
+    ever(metadataController.metaData, (metadata) {
+      if (metadata != null) {
+        navigateToWelcome();
+      }
     });
+  }
+
+  void navigateToWelcome() {
+    Get.offNamed(Routes.WELCOME);
   }
 }

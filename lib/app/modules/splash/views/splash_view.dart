@@ -36,7 +36,9 @@ class SplashView extends BaseView<SplashController> {
             padding: EdgeInsets.only(bottom: AppValues.largePadding),
             child: Text(
               'PT. Vepay Multipayment Internasional',
-              style: centerTextStyle,
+              style: regularBodyTextStyle.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
