@@ -14,11 +14,38 @@ import '../controllers/sign_in_controller.dart';
 
 class SignInView extends BaseView<SignInController> {
   final _formKey = GlobalKey<FormState>();
+
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
   String? _email;
   String? _password;
 
+  // // dispose controllers
+  @override
+  onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+  }
+
   void _submit() {
-    Get.offNamed(Routes.HOME);
+    // set email form
+    emailController.text = "mahendradwipurwanto@gmail.com";
+    // set password form
+    passwordController.text = "Qawsedrf123!@#";
+
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      Map<String, dynamic> data = {
+        'email': emailController.text,
+        'password': passwordController.text,
+        'device_token': 'device',
+        'type': 0,
+      };
+
+      controller.doSignIn(data);
+    }
   }
 
   @override
@@ -83,6 +110,7 @@ class SignInView extends BaseView<SignInController> {
         children: [
           SizedBox(height: AppValues.halfPadding),
           CustomTextFormField(
+            controller: emailController,
             labelText: 'Email',
             hintText: 'Enter your email',
             keyboardType: TextInputType.emailAddress,
@@ -99,6 +127,7 @@ class SignInView extends BaseView<SignInController> {
             onChanged: (value) => _email = value, // Dynamically save value
           ),
           CustomTextFormField(
+            controller: passwordController,
             labelText: 'Password',
             hintText: 'Enter your password',
             prefixIcon: Icon(Icons.lock_outline),

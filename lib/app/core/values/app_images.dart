@@ -5,4 +5,5 @@ abstract class AppImages {
   static const String pattern = 'assets/images/pattern.png';
   static const String welcome = 'assets/images/welcome.png';
   static const String shape = 'assets/images/shape.png';
+  static const String noImage = 'assets/images/no_image.png';
 }

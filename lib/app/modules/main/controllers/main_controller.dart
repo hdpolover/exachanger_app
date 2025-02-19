@@ -2,9 +2,14 @@ import 'package:exachanger_get_app/app/core/base/base_controller.dart';
 import 'package:get/get.dart';
 
 class MainController extends BaseController {
-  //TODO: Implement MainController
+  final _selectedMenu = 0.obs;
 
-  final count = 0.obs;
+  int get selectedMenu => _selectedMenu.value;
+
+  onMenuSelected(int index) async {
+    _selectedMenu.value = index;
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -19,6 +24,4 @@ class MainController extends BaseController {
   void onClose() {
     super.onClose();
   }
-
-  void increment() => count.value++;
 }

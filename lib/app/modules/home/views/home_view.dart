@@ -2,6 +2,7 @@ import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/data/model/blog_model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -29,15 +30,17 @@ class HomeView extends BaseView<HomeController> {
 
   @override
   Widget body(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          _topSection(),
-          _exchangeSection(),
-          _transactionSection(),
-          _whatsnewSection(),
-          _newsSection(),
-        ],
+    return Obx(
+      () => SingleChildScrollView(
+        child: Column(
+          children: [
+            _topSection(),
+            _exchangeSection(),
+            _transactionSection(),
+            _whatsnewSection(),
+            _newsSection(),
+          ],
+        ),
       ),
     );
   }
@@ -283,11 +286,16 @@ class HomeView extends BaseView<HomeController> {
             child: CarouselView(
               itemSnapping: true,
               itemExtent: Get.width * 0.8,
-              children: [
-                PromoItem(),
-                PromoItem(),
-                PromoItem(),
-              ],
+              children: controller.promos
+                  .map(
+                    (promo) => PromoItem(
+                      promo: promo,
+                      onTap: () {
+                        print('Promo ${promo.id} tapped');
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
           )
         ],
@@ -350,11 +358,15 @@ class HomeView extends BaseView<HomeController> {
                 child: ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemCount: 1,
+                  itemCount: controller.blogs.length,
                   itemBuilder: (context, index) {
+                    BlogModel blogModel = controller.blogs[index];
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: NewsItem(),
+                      child: NewsItem(
+                        blogModel: blogModel,
+                      ),
                     );
                   },
                 ),

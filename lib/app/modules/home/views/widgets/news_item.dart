@@ -1,17 +1,23 @@
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/data/model/blog_model.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../core/values/app_colors.dart';
+import '../../../../routes/app_pages.dart';
 
 class NewsItem extends StatelessWidget {
-  const NewsItem({super.key});
+  final BlogModel blogModel;
+
+  const NewsItem({super.key, required this.blogModel});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // context.pushNamed(Routes.newsDetail.name);
+        print(blogModel);
+        Get.toNamed(Routes.BLOG_DETAIL, parameters: {'id': blogModel.id!});
       },
       child: Container(
         decoration: BoxDecoration(
@@ -40,7 +46,7 @@ class NewsItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      'Bitcoin Analyst Explain Why Price is Rallying Again',
+                      blogModel.title ?? '',
                       style: regularBodyTextStyle.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -51,15 +57,16 @@ class NewsItem extends StatelessWidget {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        Text('5 hours',
+                        Text(blogModel.createdAt ?? '',
                             style: smallBodyTextStyle.copyWith(
                                 color: Colors.grey)),
                         const SizedBox(width: 10),
-                        Text('by Author',
+                        Text(blogModel.category ?? '',
                             style: smallBodyTextStyle.copyWith(
                                 color: AppColors.colorPrimary)),
                         SizedBox(width: 10),
-                        Text('in Category', style: smallBodyTextStyle),
+                        Text(blogModel.category ?? '',
+                            style: smallBodyTextStyle),
                       ],
                     ),
                   ],

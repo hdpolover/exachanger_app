@@ -1,5 +1,12 @@
 import 'package:get/get.dart';
 
+import '../middlewares/blog_middleware.dart';
+import '../modules/blog/bindings/blog_binding.dart';
+import '../modules/blog/views/blog_view.dart';
+import '../modules/blog_detail/bindings/blog_detail_binding.dart';
+import '../modules/blog_detail/views/blog_detail_view.dart';
+import '../modules/exchange/bindings/exchange_binding.dart';
+import '../modules/exchange/views/exchange_view.dart';
 import '../modules/history/bindings/history_binding.dart';
 import '../modules/history/views/history_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -8,6 +15,8 @@ import '../modules/main/bindings/main_binding.dart';
 import '../modules/main/views/main_view.dart';
 import '../modules/profile/bindings/profile_binding.dart';
 import '../modules/profile/views/profile_view.dart';
+import '../modules/rate/bindings/rate_binding.dart';
+import '../modules/rate/views/rate_view.dart';
 import '../modules/sign_in/bindings/sign_in_binding.dart';
 import '../modules/sign_in/views/sign_in_view.dart';
 import '../modules/sign_up/bindings/sign_up_binding.dart';
@@ -37,7 +46,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.MAIN,
-      page: () => const MainView(),
+      page: () => MainView(),
       binding: MainBinding(),
     ),
     GetPage(
@@ -64,6 +73,29 @@ class AppPages {
       name: _Paths.HISTORY,
       page: () => const HistoryView(),
       binding: HistoryBinding(),
+    ),
+    GetPage(
+      name: _Paths.BLOG,
+      page: () => BlogView(),
+      binding: BlogBinding(),
+    ),
+    GetPage(
+      name: _Paths.BLOG_DETAIL,
+      page: () => BlogDetailView(),
+      binding: BlogDetailBinding(),
+      middlewares: [
+        BlogMiddleware(),
+      ],
+    ),
+    GetPage(
+      name: _Paths.RATE,
+      page: () => const RateView(),
+      binding: RateBinding(),
+    ),
+    GetPage(
+      name: _Paths.EXCHANGE,
+      page: () => const ExchangeView(),
+      binding: ExchangeBinding(),
     ),
   ];
 }

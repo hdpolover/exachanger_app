@@ -62,6 +62,7 @@ abstract class BaseView<Controller extends BaseController>
       key: globalKey,
       appBar: appBar(context),
       floatingActionButton: floatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: pageContent(context),
       bottomNavigationBar: bottomNavigationBar(),
       drawer: drawer(),

@@ -41,6 +41,12 @@ class DioProvider {
     }
   }
 
+  // Add method to set token
+  static void setAuthToken(String token) {
+    _instance ??= httpDio;
+    _instance!.options.headers['Authorization'] = 'Bearer $token';
+  }
+
   ///returns a Dio client with Access token in header
   static Dio get tokenClient {
     _addInterceptors();
