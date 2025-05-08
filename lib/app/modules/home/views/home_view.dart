@@ -38,7 +38,7 @@ class HomeView extends BaseView<HomeController> {
           children: [
             _topSection(),
             _exchangeSection(),
-            _transactionSection(),
+            if (controller.transactions.isNotEmpty) _transactionSection(),
             _whatsnewSection(),
             _newsSection(),
           ],
@@ -241,7 +241,12 @@ class HomeView extends BaseView<HomeController> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: HistoryItem(
-                        transaction: controller.transactions[index]),
+                      transaction: controller.transactions[index],
+                      onTap: () {
+                        Get.toNamed(Routes.TRANSACTION_DETAIL,
+                            arguments: controller.transactions[index]);
+                      },
+                    ),
                   );
                 },
               ),

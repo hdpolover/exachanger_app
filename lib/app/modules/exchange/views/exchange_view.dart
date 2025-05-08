@@ -24,7 +24,10 @@ class DropdownExchangeItem {
 class ExchangeView extends BaseView<ExchangeController> {
   @override
   PreferredSizeWidget appBar(BuildContext context) {
-    return CustomAppBar(appBarTitleText: 'Exchange');
+    return CustomAppBar(
+      appBarTitleText: 'Exchange',
+      isBackButtonEnabled: false,
+    );
   }
 
   List<DropdownExchangeItem> dropdownItems = [

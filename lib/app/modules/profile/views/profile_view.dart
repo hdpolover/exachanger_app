@@ -75,10 +75,12 @@ class ProfileView extends BaseView<ProfileController> {
       appVersion = packageInfo.version;
       appName = packageInfo.appName;
     });
+
     return SizedBox(
       height: Get.height * 0.2,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'v$appVersion',
@@ -99,66 +101,153 @@ class ProfileView extends BaseView<ProfileController> {
   }
 
   _topStack() {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.colorPrimary,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
-          ),
-        ),
-        // create another container that slightly overlaps the first container
-        Positioned(
-          top: Get.height * 0.25,
-          child: Container(
-            width: Get.width,
-            height: Get.height,
+    return SizedBox(
+      height: Get.height * 0.4,
+      child: Stack(
+        children: [
+          // Blue top container
+          Container(
+            height: Get.height * 0.3,
+            width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.colorPrimary,
             ),
-            padding: const EdgeInsets.all(20),
+            alignment: Alignment.topCenter,
+            padding: EdgeInsets.only(top: 30),
+            child: Text(
+              'Profile',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
-      ],
+
+          // White container with inward curve at top
+          Positioned(
+            top: Get.height * 0.2,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+              ),
+              padding: EdgeInsets.only(top: Get.height * 0.08),
+              child: Column(
+                children: [
+                  Text(
+                    'Alfina Rosyida',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'alfinarosyida@gmail.com',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Account Details',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Profile avatar overlapping blue and white sections
+          Positioned(
+            top: Get.height * 0.125,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 55,
+                    backgroundColor: Colors.white,
+                    child: CircleAvatar(
+                      radius: 52,
+                      backgroundImage: NetworkImage(
+                        'https://www.pngitem.com/pimgs/m/150-1503945_transparent-hd-user-png-free-download-png-download.png',
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 5,
+                    right: 5,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget body(BuildContext context) {
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverAppBar(
-          automaticallyImplyLeading: false,
-          expandedHeight: Get.height * 0.4,
-          floating: false,
-          pinned: true,
-          flexibleSpace: FlexibleSpaceBar(
-            centerTitle: false,
-            background: _topStack(),
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          // Top section with blue background, curved white container and avatar
+          _topStack(),
+
+          // Content section
+          Container(
+            color: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Settings items
+                ...items.map((item) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: item,
+                    )),
+
+                // Bottom section with version info
+              ],
+            ),
           ),
-        ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              // when index is max, return the bottom list section
-              if (index == items.length) {
-                return _buildBottomListSection();
-              } else {
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
-                  child: items[index],
-                );
-              }
-            },
-            childCount: items.length + 1,
-          ),
-        ),
-      ],
+
+          _buildBottomListSection(),
+        ],
+      ),
     );
     // return Stack(
     //   // Use Stack to layer widgets

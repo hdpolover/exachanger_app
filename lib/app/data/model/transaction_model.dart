@@ -105,7 +105,6 @@ class TransactionModel {
     this.updatedAt,
     this.deletedAt,
   });
-
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
       id: json['id'],
@@ -115,7 +114,8 @@ class TransactionModel {
       trxCode: json['trx_code'],
       paymentProof: json['payment_proof'],
       discount: json['discount'],
-      total: json['total'],
+      total:
+          json['total'] != null ? double.parse(json['total'].toString()) : null,
       transferMeta: json['transfer_meta'] != null
           ? TransferMeta.fromJson(json['transfer_meta'])
           : null,
@@ -150,7 +150,6 @@ class Products {
     this.amount,
     this.subTotal,
   });
-
   factory Products.fromJson(Map<String, dynamic> json) {
     return Products(
       id: json['id'],
@@ -158,8 +157,12 @@ class Products {
       productMeta: json['product_meta'] != null
           ? ProductMeta.fromJson(json['product_meta'])
           : null,
-      amount: json['amount'],
-      subTotal: json['sub_total'],
+      amount: json['amount'] != null
+          ? double.parse(json['amount'].toString())
+          : null,
+      subTotal: json['sub_total'] != null
+          ? double.parse(json['sub_total'].toString())
+          : null,
     );
   }
 
@@ -194,9 +197,9 @@ class ProductMeta {
 class To {
   final String? id;
   final int? pricingType;
-  final int? pricing;
+  final double? pricing;
   final int? feeType;
-  final int? fee;
+  final double? fee;
   final String? currency;
   final Product? product;
 
@@ -214,9 +217,11 @@ class To {
     return To(
       id: json['id'],
       pricingType: json['pricing_type'],
-      pricing: json['pricing'],
+      pricing: json['pricing'] != null
+          ? double.parse(json['pricing'].toString())
+          : null,
       feeType: json['fee_type'],
-      fee: json['fee'],
+      fee: json['fee'] != null ? double.parse(json['fee'].toString()) : null,
       currency: json['currency'],
       product:
           json['product'] != null ? Product.fromJson(json['product']) : null,
@@ -339,9 +344,9 @@ class TransferData {
 class Price {
   final String? id;
   final int? pricingType;
-  final int? pricing;
+  final double? pricing;
   final int? feeType;
-  final int? fee;
+  final double? fee;
   final String? currency;
 
   Price({
@@ -357,9 +362,11 @@ class Price {
     return Price(
       id: json['id'],
       pricingType: json['pricing_type'],
-      pricing: json['pricing'],
+      pricing: json['pricing'] != null
+          ? double.parse(json['pricing'].toString())
+          : null,
       feeType: json['fee_type'],
-      fee: json['fee'],
+      fee: json['fee'] != null ? double.parse(json['fee'].toString()) : null,
       currency: json['currency'],
     );
   }

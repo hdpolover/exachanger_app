@@ -1,10 +1,11 @@
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
+import 'package:exachanger_get_app/app/data/model/transaction_model.dart';
 import 'package:get/get.dart';
 
 class TransactionDetailController extends BaseController {
-  //TODO: Implement TransactionDetailController
+  // Transaction model from arguments
+  final TransactionModel transaction = Get.arguments;
 
-  final count = 0.obs;
   @override
   void onInit() {
     super.onInit();
@@ -19,6 +20,4 @@ class TransactionDetailController extends BaseController {
   void onClose() {
     super.onClose();
   }
-
-  void increment() => count.value++;
 }

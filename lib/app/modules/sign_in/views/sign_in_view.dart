@@ -83,7 +83,9 @@ class SignInView extends BaseView<SignInController> {
                   style: regularBodyTextStyle,
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Get.offAndToNamed(Routes.SIGN_UP);
+                  },
                   child: Text(
                     'Sign Up',
                     style: regularBodyTextStyle.copyWith(

@@ -17,43 +17,48 @@ class SettingItem extends StatelessWidget {
     required this.onTap,
     this.isSignOutBtn = false,
   });
-
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      minVerticalPadding: 20,
-      dense: false,
-      visualDensity: VisualDensity.comfortable,
+    return Card(
+      color: Colors.white,
+      elevation: 0,
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
           color: isSignOutBtn ? Colors.red : Colors.grey.shade400,
+          width: 1,
         ),
       ),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(96),
+      child: ListTile(
+        minVerticalPadding: 20,
+        dense: false,
+        visualDensity: VisualDensity.comfortable,
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(96),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+          ),
         ),
-        child: Icon(
-          icon,
-          size: 20,
+        title: Text(
+          title,
+          style: regularBodyTextStyle.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        subtitle: Text(subtitle, style: smallBodyTextStyle),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          color: Colors.grey,
+        ), // iOS style arrow
+        onTap: onTap,
       ),
-      title: Text(
-        title,
-        style: regularBodyTextStyle.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      subtitle: Text(subtitle, style: smallBodyTextStyle),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
-        color: Colors.grey,
-      ), // iOS style arrow
-      onTap: onTap,
     );
   }
 }
