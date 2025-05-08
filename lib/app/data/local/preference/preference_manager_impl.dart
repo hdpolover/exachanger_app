@@ -1,9 +1,18 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../network/dio_provider.dart';
 import '/app/data/local/preference/preference_manager.dart';
 
 class PreferenceManagerImpl implements PreferenceManager {
   final _preference = SharedPreferences.getInstance();
+
+  Future<void> logout() async {
+    await remove('access_token');
+    await remove('refresh_token');
+    await setBool('is_signed_in', false);
+    // Clear auth token from Dio
+    DioProvider.clearAuthToken();
+  }
 
   @override
   Future<String> getString(String key, {String defaultValue = ""}) {

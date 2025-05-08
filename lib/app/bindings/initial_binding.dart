@@ -11,4 +11,8 @@ class InitialBinding implements Bindings {
     RemoteSourceBindings().dependencies();
     LocalSourceBindings().dependencies();
   }
+
+  static void reinitializeDependencies() {
+    InitialBinding().dependencies();
+  }
 }

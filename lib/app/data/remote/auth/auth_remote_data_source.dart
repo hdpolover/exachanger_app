@@ -5,7 +5,7 @@ abstract class AuthRemoteDataSource {
 
   Future<void> signUp(Map<String, dynamic> data);
 
-  Future<SigninModel> refreshToken(String refreshToken);
+  Future<String> refreshToken(String refreshToken);
 
   Future<void> logout(String refreshToken);
 

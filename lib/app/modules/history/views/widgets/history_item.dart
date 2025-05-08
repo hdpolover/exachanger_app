@@ -1,31 +1,41 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/data/model/transaction_model.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/common_functions.dart';
 import '../../../../core/widgets/status_chip.dart';
 
 class HistoryItem extends StatelessWidget {
+  final TransactionModel transaction;
   const HistoryItem({
     super.key,
     this.onTap,
+    required this.transaction,
   });
 
   final VoidCallback? onTap;
 
-  _productView() {
+  _productView(String url, String name) {
+    print('url: $url');
+
     return Row(
       children: [
-        Image.asset(
-          AppImages.logo,
-          width: 40,
-          height: 40,
+        CachedNetworkImage(
+          imageUrl: url,
+          errorWidget: (context, url, error) => Image.asset(
+            AppImages.logo,
+            width: 15,
+          ),
+          width: 15,
         ),
+        SizedBox(width: 5),
         Text(
-          'PayPal',
+          name,
           style: extraSmallBodyTextStyle.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -35,28 +45,34 @@ class HistoryItem extends StatelessWidget {
   }
 
   _topSection() {
-    int status = Random().nextInt(3);
+    int status = transaction.status ?? 0;
+
+    From from = transaction.products![0].productMeta!.from!;
+    To to = transaction.products![0].productMeta!.to!;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: StatusChip(status: status),
-        ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _productView(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Icon(
-                    Icons.arrow_forward,
-                    size: 20,
-                  ),
+                Row(
+                  children: [
+                    _productView(from.image!, from.name!),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(
+                        Icons.arrow_forward,
+                        size: 20,
+                      ),
+                    ),
+                    _productView(to.product!.image!, to.product!.name!),
+                  ],
                 ),
-                _productView()
+                StatusChip(status: status)
               ],
             ),
             Text(
@@ -107,7 +123,7 @@ class HistoryItem extends StatelessWidget {
             ),
             SizedBox(height: 5),
             Text(
-              CommonFunctions.formatUSD(1000),
+              CommonFunctions.formatUSD(transaction.total!),
               style: bigBodyTextStyle.copyWith(
                 fontWeight: FontWeight.bold,
               ),

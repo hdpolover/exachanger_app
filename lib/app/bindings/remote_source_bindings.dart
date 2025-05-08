@@ -8,6 +8,8 @@ import '../data/remote/blog/blog_remote_data_source.dart';
 import '../data/remote/blog/blog_remote_data_source_impl.dart';
 import '../data/remote/promo/promo_remote_data_source.dart';
 import '../data/remote/promo/promo_remote_data_source_impl.dart';
+import '../data/remote/transaction/transaction_remote_data_source.dart';
+import '../data/remote/transaction/transaction_remote_data_source_impl.dart';
 import '/app/data/remote/github_remote_data_source.dart';
 import '/app/data/remote/github_remote_data_source_impl.dart';
 
@@ -37,6 +39,11 @@ class RemoteSourceBindings implements Bindings {
     Get.lazyPut<BlogRemoteDataSource>(
       () => BlogRemoteDataSourceImpl(),
       tag: (BlogRemoteDataSource).toString(),
+    );
+    // transaction remote data source
+    Get.lazyPut<TransactionRemoteDataSource>(
+      () => TransactionRemoteDataSourceImpl(),
+      tag: (TransactionRemoteDataSource).toString(),
     );
   }
 }

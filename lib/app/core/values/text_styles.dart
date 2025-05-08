@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 
 import '/app/core/values/app_colors.dart';
 
+const appBarTextStyle = TextStyle(
+  fontSize: 18,
+  fontWeight: FontWeight.w600,
+  color: AppColors.textColorPrimary,
+);
+
 const extraSmallBodyTextStyle = TextStyle(
-  fontSize: 12,
+  fontSize: 10,
   fontWeight: FontWeight.w400,
   color: AppColors.textColorPrimary,
 );

@@ -11,4 +11,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<SigninModel> getAuthData(Map<String, dynamic> data) {
     return _remoteSource.signIn(data);
   }
+
+  @override
+  Future<String> refreshToken(String token) {
+    // TODO: implement refreshToken
+    return _remoteSource.refreshToken(token);
+  }
 }

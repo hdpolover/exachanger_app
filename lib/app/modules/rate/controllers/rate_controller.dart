@@ -1,6 +1,7 @@
+import 'package:exachanger_get_app/app/core/base/base_controller.dart';
 import 'package:get/get.dart';
 
-class RateController extends GetxController {
+class RateController extends BaseController {
   //TODO: Implement RateController
 
   final count = 0.obs;

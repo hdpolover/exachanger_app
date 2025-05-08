@@ -8,6 +8,8 @@ import 'package:get/get.dart';
 
 import '../data/repository/blog/blog_repository_impl.dart';
 import '../data/repository/promo/promo_repository.dart';
+import '../data/repository/transaction/transaction_repository.dart';
+import '../data/repository/transaction/transaction_repository_impl.dart';
 import '/app/data/repository/github_repository.dart';
 import '/app/data/repository/github_repository_impl.dart';
 
@@ -36,6 +38,11 @@ class RepositoryBindings implements Bindings {
     Get.lazyPut<BlogRepository>(
       () => BlogRepositoryImpl(),
       tag: (BlogRepository).toString(),
+    );
+    // transaction repository
+    Get.lazyPut<TransactionRepository>(
+      () => TransactionRepositoryImpl(),
+      tag: (TransactionRepository).toString(),
     );
   }
 }

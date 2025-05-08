@@ -3,8 +3,10 @@ import 'package:exachanger_get_app/app/data/local/preference/preference_manager_
 import 'package:exachanger_get_app/app/data/model/blog_model.dart';
 import 'package:exachanger_get_app/app/data/model/promo_model.dart';
 import 'package:exachanger_get_app/app/data/repository/blog/blog_repository.dart';
+import 'package:exachanger_get_app/app/data/repository/transaction/transaction_repository.dart';
 import 'package:get/get.dart';
 
+import '../../../data/model/transaction_model.dart';
 import '../../../data/repository/promo/promo_repository.dart';
 
 class HomeController extends BaseController {
@@ -14,6 +16,9 @@ class HomeController extends BaseController {
   final BlogRepository blogRepository =
       Get.find(tag: (BlogRepository).toString());
 
+  final TransactionRepository transactionRepository =
+      Get.find(tag: (TransactionRepository).toString());
+
   //promos
   Rx<List<PromoModel>> promoList = Rx<List<PromoModel>>([]);
   List<PromoModel> get promos => promoList.value;
@@ -21,6 +26,10 @@ class HomeController extends BaseController {
   // blogs
   Rx<List<BlogModel>> blogList = Rx<List<BlogModel>>([]);
   List<BlogModel> get blogs => blogList.value;
+
+  // transactions
+  Rx<List<TransactionModel>> transactionList = Rx<List<TransactionModel>>([]);
+  List<TransactionModel> get transactions => transactionList.value;
 
   getData() {
     var promoService = promoRespository.getAllPromos();
@@ -38,12 +47,21 @@ class HomeController extends BaseController {
     }, onError: (error) {
       showErrorMessage(error.toString());
     });
+
+    var transactionService = transactionRepository.getAllTransactions();
+
+    callDataService(transactionService, onSuccess: (data) {
+      transactionList.value = data;
+    }, onError: (error) {
+      showErrorMessage(error.toString());
+    });
   }
 
   @override
   void onInit() {
-    getData();
     super.onInit();
+
+    getData();
   }
 
   @override

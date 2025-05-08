@@ -1,6 +1,7 @@
+import 'package:exachanger_get_app/app/core/base/base_controller.dart';
 import 'package:get/get.dart';
 
-class ExchangeController extends GetxController {
+class ExchangeController extends BaseController {
   //TODO: Implement ExchangeController
 
   final count = 0.obs;

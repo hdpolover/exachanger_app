@@ -3,6 +3,8 @@ import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:exachanger_get_app/app/data/model/blog_model.dart';
+import 'package:exachanger_get_app/app/data/model/promo_model.dart';
+import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -234,11 +236,12 @@ class HomeView extends BaseView<HomeController> {
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: 2,
+                itemCount: controller.transactions.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: HistoryItem(),
+                    child: HistoryItem(
+                        transaction: controller.transactions[index]),
                   );
                 },
               ),
@@ -251,7 +254,7 @@ class HomeView extends BaseView<HomeController> {
 
   Widget _whatsnewSection() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -266,7 +269,7 @@ class HomeView extends BaseView<HomeController> {
               Spacer(),
               TextButton(
                 onPressed: () {
-                  print('View All New Features');
+                  Get.toNamed(Routes.PROMO, arguments: controller.promos);
                 },
                 child: Text(
                   'View All',
@@ -279,21 +282,29 @@ class HomeView extends BaseView<HomeController> {
               ),
             ],
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 5),
           // carousel view
           SizedBox(
-            height: Get.height * 0.25,
+            height: Get.height * 0.2,
             child: CarouselView(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               itemSnapping: true,
               itemExtent: Get.width * 0.8,
+              onTap: (index) {
+                print('Promo $index tapped');
+
+                PromoModel promo = controller.promos[index];
+
+                print(promo);
+
+                Get.toNamed(Routes.PROMO_DETAIL, arguments: promo);
+              },
               children: controller.promos
                   .map(
-                    (promo) => PromoItem(
-                      promo: promo,
-                      onTap: () {
-                        print('Promo ${promo.id} tapped');
-                      },
-                    ),
+                    (promo) => PromoItem(promo: promo),
                   )
                   .toList(),
             ),
@@ -339,7 +350,7 @@ class HomeView extends BaseView<HomeController> {
                   Spacer(),
                   TextButton(
                     onPressed: () {
-                      print('View All New Features');
+                      Get.toNamed(Routes.BLOG, arguments: controller.blogs);
                     },
                     child: Text(
                       'View All',

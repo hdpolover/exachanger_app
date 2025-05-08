@@ -26,8 +26,8 @@ class SignInController extends BaseController {
 
       DioProvider.setAuthToken(data.accessToken!);
 
-      // go to home
-      Get.offNamed(Routes.HOME);
+      // go to main view
+      Get.offNamed(Routes.MAIN);
     }, onError: (error) {
       showErrorMessage(error.toString());
     });

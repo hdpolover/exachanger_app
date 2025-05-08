@@ -29,12 +29,10 @@ class MainView extends BaseView<MainController> {
   Widget? floatingActionButton() {
     return FloatingActionButton(
       backgroundColor: AppColors.colorPrimary,
-      tooltip: 'Exchange',
       shape: CircleBorder(),
       child: Icon(
-        FontAwesomeIcons.moneyBillTransfer,
+        FontAwesomeIcons.hammer,
         color: Colors.white,
-        size: 25,
       ),
       onPressed: () {
         // _fabAnimationController.reset();

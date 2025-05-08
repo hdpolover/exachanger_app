@@ -15,6 +15,9 @@ abstract class Routes {
   static const BLOG_DETAIL = _Paths.BLOG_DETAIL;
   static const RATE = _Paths.RATE;
   static const EXCHANGE = _Paths.EXCHANGE;
+  static const TRANSACTION_DETAIL = _Paths.TRANSACTION_DETAIL;
+  static const PROMO_DETAIL = _Paths.PROMO_DETAIL;
+  static const PROMO = _Paths.PROMO;
 }
 
 abstract class _Paths {
@@ -31,4 +34,7 @@ abstract class _Paths {
   static const BLOG_DETAIL = '/blog-detail';
   static const RATE = '/rate';
   static const EXCHANGE = '/exchange';
+  static const TRANSACTION_DETAIL = '/transaction-detail';
+  static const PROMO_DETAIL = '/promo-detail';
+  static const PROMO = '/promo';
 }

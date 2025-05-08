@@ -12,6 +12,7 @@ class WelcomeController extends BaseController {
   @override
   void onInit() {
     super.onInit();
+    getWelcomeInfo();
   }
 
   @override
@@ -22,6 +23,9 @@ class WelcomeController extends BaseController {
   @override
   void onClose() {
     super.onClose();
+
+    // remove welcome controller
+    Get.delete<WelcomeController>();
   }
 
   void getWelcomeInfo() {

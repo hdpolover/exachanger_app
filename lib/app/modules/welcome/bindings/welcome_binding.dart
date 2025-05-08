@@ -1,6 +1,5 @@
+import 'package:exachanger_get_app/app/bindings/initial_binding.dart';
 import 'package:get/get.dart';
-
-import '../controllers/welcome_controller.dart';
 
 class WelcomeBinding extends Bindings {
   @override
@@ -8,5 +7,6 @@ class WelcomeBinding extends Bindings {
     // Get.lazyPut<WelcomeController>(
     //   () => WelcomeController(),
     // );
+    InitialBinding.reinitializeDependencies();
   }
 }

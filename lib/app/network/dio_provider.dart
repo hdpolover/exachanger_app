@@ -1,12 +1,20 @@
 import 'package:dio/dio.dart';
+import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
+import 'package:exachanger_get_app/app/network/token_refresh_interceptor.dart';
+import 'package:get/get.dart';
 
 import '../../flavors/environment.dart';
+import '../data/remote/auth/auth_remote_data_source.dart';
 import '/app/network/pretty_dio_logger.dart';
 import '/app/network/request_headers.dart';
 import '/flavors/build_config.dart';
 
 class DioProvider {
   static final String baseUrl = BuildConfig.instance.config.baseUrl;
+
+  static final _authRemoteDataSource =
+      Get.find<AuthRemoteDataSource>(tag: (AuthRemoteDataSource).toString());
+  static final _preferenceManager = Get.find<PreferenceManagerImpl>();
 
   static Dio? _instance;
 
@@ -47,6 +55,12 @@ class DioProvider {
     _instance!.options.headers['Authorization'] = 'Bearer $token';
   }
 
+  // Add method to clear token
+  static void clearAuthToken() {
+    _instance ??= httpDio;
+    _instance!.options.headers.remove('Authorization');
+  }
+
   ///returns a Dio client with Access token in header
   static Dio get tokenClient {
     _addInterceptors();
@@ -58,6 +72,9 @@ class DioProvider {
   ///Also adds a token refresh interceptor which retry the request when it's unauthorized
   static Dio get dioWithHeaderToken {
     _addInterceptors();
+
+    _instance!.interceptors.add(
+        TokenRefreshInterceptor(_authRemoteDataSource, _preferenceManager));
 
     return _instance!;
   }

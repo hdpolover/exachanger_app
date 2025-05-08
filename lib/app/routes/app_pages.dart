@@ -15,6 +15,10 @@ import '../modules/main/bindings/main_binding.dart';
 import '../modules/main/views/main_view.dart';
 import '../modules/profile/bindings/profile_binding.dart';
 import '../modules/profile/views/profile_view.dart';
+import '../modules/promo/bindings/promo_binding.dart';
+import '../modules/promo/views/promo_view.dart';
+import '../modules/promo_detail/bindings/promo_detail_binding.dart';
+import '../modules/promo_detail/views/promo_detail_view.dart';
 import '../modules/rate/bindings/rate_binding.dart';
 import '../modules/rate/views/rate_view.dart';
 import '../modules/sign_in/bindings/sign_in_binding.dart';
@@ -23,6 +27,8 @@ import '../modules/sign_up/bindings/sign_up_binding.dart';
 import '../modules/sign_up/views/sign_up_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
+import '../modules/transaction_detail/bindings/transaction_detail_binding.dart';
+import '../modules/transaction_detail/views/transaction_detail_view.dart';
 import '../modules/welcome/bindings/welcome_binding.dart';
 import '../modules/welcome/views/welcome_view.dart';
 
@@ -41,7 +47,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.PROFILE,
-      page: () => const ProfileView(),
+      page: () => ProfileView(),
       binding: ProfileBinding(),
     ),
     GetPage(
@@ -71,7 +77,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.HISTORY,
-      page: () => const HistoryView(),
+      page: () => HistoryView(),
       binding: HistoryBinding(),
     ),
     GetPage(
@@ -89,13 +95,28 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.RATE,
-      page: () => const RateView(),
+      page: () => RateView(),
       binding: RateBinding(),
     ),
     GetPage(
       name: _Paths.EXCHANGE,
-      page: () => const ExchangeView(),
+      page: () => ExchangeView(),
       binding: ExchangeBinding(),
+    ),
+    GetPage(
+      name: _Paths.TRANSACTION_DETAIL,
+      page: () => TransactionDetailView(),
+      binding: TransactionDetailBinding(),
+    ),
+    GetPage(
+      name: _Paths.PROMO_DETAIL,
+      page: () => PromoDetailView(),
+      binding: PromoDetailBinding(),
+    ),
+    GetPage(
+      name: _Paths.PROMO,
+      page: () => PromoView(),
+      binding: PromoBinding(),
     ),
   ];
 }

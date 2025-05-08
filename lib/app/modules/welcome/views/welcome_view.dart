@@ -52,40 +52,130 @@ class WelcomeView extends BaseView<WelcomeController> {
         Positioned.fill(
           child: Image.asset(AppImages.shape, fit: BoxFit.cover),
         ),
-        SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppValues.largePadding,
-              vertical: AppValues.largePadding,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: AppValues.padding,
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppValues.largePadding,
+            vertical: AppValues.largePadding,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: AppValues.extraLargePadding,
+              ),
+              // Display title from hero-section if available
+              Text(
+                _getHeroSectionTitle() ?? 'Exachanger',
+                style: titleTextStyle.copyWith(
+                  color: AppColors.colorWhite,
+                  fontWeight: FontWeight.bold,
                 ),
-                Text(
-                  controller.metaData.value?.id ?? 'Exachanger',
-                  style: titleTextStyle.copyWith(
-                    color: AppColors.colorWhite,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              SizedBox(height: AppValues.smallPadding),
+              // Display subtitle from hero-section if available
+              Text(
+                _getHeroSectionSubtitle() ??
+                    'At Exachanger, we simplify access to the world\'s coin and crypto exchange process!.',
+                style: regularBodyTextStyle.copyWith(
+                  color: AppColors.colorWhite,
                 ),
-                SizedBox(height: AppValues.smallPadding),
-                Text(
-                  'At Exachanger, we simplify access to the world\'s coin and crypto exchange process!.',
-                  style: regularBodyTextStyle.copyWith(
-                    color: AppColors.colorWhite,
-                  ),
-                ),
-                const Spacer(),
-                _buildButtons(),
-              ],
-            ),
+              ),
+              SizedBox(height: AppValues.padding * 2),
+              // Display image from image-section if available
+              _buildImageSection(),
+              const Spacer(),
+              _buildButtons(),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  // Helper method to get the hero section title
+  String? _getHeroSectionTitle() {
+    if (controller.metaData.value?.content == null) return null;
+
+    for (var content in controller.metaData.value!.content!) {
+      if (content.section?.code == 'hero-section') {
+        for (var component in content.section?.components ?? []) {
+          if (component.order == 1 && component.component == 'text') {
+            return component.data;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  // Helper method to get the hero section subtitle
+  String? _getHeroSectionSubtitle() {
+    if (controller.metaData.value?.content == null) return null;
+
+    for (var content in controller.metaData.value!.content!) {
+      if (content.section?.code == 'hero-section') {
+        for (var component in content.section?.components ?? []) {
+          if (component.order == 2 && component.component == 'text') {
+            return component.data;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  // Widget to display the image from image section
+  Widget _buildImageSection() {
+    String? imageUrl = _getImageUrl();
+    if (imageUrl == null) return const SizedBox();
+
+    return Center(
+      child: SizedBox(
+        height: Get.height * 0.5, // Define appropriate height
+        width: double.infinity,
+
+        child: ClipRRect(
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                AppImages.noImage,
+                fit: BoxFit.contain,
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to get image URL
+  String? _getImageUrl() {
+    if (controller.metaData.value?.content == null) return null;
+
+    for (var content in controller.metaData.value!.content!) {
+      if (content.section?.code == 'iamge-section') {
+        // Note: matches the typo in your JSON
+        for (var component in content.section?.components ?? []) {
+          if (component.component == 'image') {
+            return component.data;
+          }
+        }
+      }
+    }
+    return null;
   }
 
   Widget _buildButtons() {

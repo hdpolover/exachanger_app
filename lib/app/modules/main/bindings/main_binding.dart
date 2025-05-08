@@ -13,8 +13,9 @@ class MainBinding extends Bindings {
     Get.lazyPut<MainController>(
       () => MainController(),
     );
-    Get.lazyPut<HomeController>(
-      () => HomeController(),
+    Get.put<HomeController>(
+      HomeController(),
+      permanent: true,
     );
     Get.lazyPut<HistoryController>(
       () => HistoryController(),

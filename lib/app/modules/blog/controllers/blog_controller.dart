@@ -1,10 +1,10 @@
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
+import 'package:exachanger_get_app/app/data/model/blog_model.dart';
 import 'package:get/get.dart';
 
 class BlogController extends BaseController {
-  //TODO: Implement BlogController
+  List<BlogModel> blogs = Get.arguments;
 
-  final count = 0.obs;
   @override
   void onInit() {
     super.onInit();
@@ -19,6 +19,4 @@ class BlogController extends BaseController {
   void onClose() {
     super.onClose();
   }
-
-  void increment() => count.value++;
 }

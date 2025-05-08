@@ -45,9 +45,21 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
   }
 
   @override
-  Future<SigninModel> refreshToken(String refreshToken) {
-    // TODO: implement refreshToken
-    throw UnimplementedError();
+  Future<String> refreshToken(String refreshToken) {
+    var endpoint = "${DioProvider.baseUrl}/${AppEndpoints.refreshToken}";
+    var dioCall = dioClient.post(
+      endpoint,
+      data: jsonEncode({"refresh_token": refreshToken}),
+    );
+
+    try {
+      return callApiWithErrorParser(dioCall).then(
+        (response) =>
+            ApiResponseModel.fromJson(response.data).data["access_token"],
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

@@ -1,4 +1,4 @@
-import 'package:exachanger_get_app/app/core/values/app_images.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:exachanger_get_app/app/data/model/blog_model.dart';
 import 'package:flutter/material.dart';
@@ -14,72 +14,77 @@ class NewsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String date = blogModel.createdAt!;
+
     return GestureDetector(
       onTap: () {
-        print(blogModel);
-        Get.toNamed(Routes.BLOG_DETAIL, parameters: {'id': blogModel.id!});
+        Get.toNamed(Routes.BLOG_DETAIL, arguments: blogModel);
       },
       child: Container(
+        padding: EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade200,
-              spreadRadius: 1,
-              blurRadius: 1,
-              offset: const Offset(0, 1),
+          // add border just the bottom
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 1,
             ),
-          ],
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      blogModel.title ?? '',
-                      style: regularBodyTextStyle.copyWith(
-                        fontWeight: FontWeight.bold,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    blogModel.title ?? '',
+                    style: regularBodyTextStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        date,
+                        style: smallBodyTextStyle.copyWith(
+                          color: Colors.grey,
+                        ),
                       ),
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Text(blogModel.createdAt ?? '',
-                            style: smallBodyTextStyle.copyWith(
-                                color: Colors.grey)),
-                        const SizedBox(width: 10),
-                        Text(blogModel.category ?? '',
-                            style: smallBodyTextStyle.copyWith(
-                                color: AppColors.colorPrimary)),
-                        SizedBox(width: 10),
-                        Text(blogModel.category ?? '',
-                            style: smallBodyTextStyle),
-                      ],
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 10),
+                      Text(
+                        blogModel.category ?? '',
+                        style: smallBodyTextStyle.copyWith(
+                          color: AppColors.colorPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             Hero(
-              tag: 'news',
-              child: Image.asset(
-                AppImages.welcome,
-                fit: BoxFit.cover,
-                width: 100,
-                height: 100,
+              tag: blogModel.id!,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: CachedNetworkImage(
+                  imageUrl: blogModel.featuredImage!,
+                  fit: BoxFit.cover,
+                  height: 70,
+                  width: 70,
+                ),
               ),
             ),
           ],

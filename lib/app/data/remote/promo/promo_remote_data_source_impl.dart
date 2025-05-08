@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:exachanger_get_app/app/data/model/promo_model.dart';
-import 'package:exachanger_get_app/app/data/model/blog_model.dart';
 import 'package:exachanger_get_app/app/data/remote/promo/promo_remote_data_source.dart';
 
 import '../../../core/base/base_remote_source.dart';

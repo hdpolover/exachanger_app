@@ -1,7 +1,5 @@
+import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:flutter/material.dart';
-
-import '/app/core/values/app_colors.dart';
-import 'app_bar_title.dart';
 
 //Default appbar customized with the design of our app
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -22,13 +20,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.appBarColor,
-      centerTitle: true,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      centerTitle: false,
       elevation: 0,
       automaticallyImplyLeading: isBackButtonEnabled,
       actions: actions,
-      iconTheme: const IconThemeData(color: AppColors.appBarIconColor),
-      title: AppBarTitle(text: appBarTitleText),
+      title: Text(
+        appBarTitleText,
+        style: appBarTextStyle,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 }

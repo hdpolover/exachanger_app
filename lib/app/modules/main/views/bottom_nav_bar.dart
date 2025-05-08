@@ -36,7 +36,7 @@ class BottomNavBar extends StatelessWidget with BaseWidgetMixin {
             children: [
               Icon(
                 iconList.values.toList()[index],
-                size: 20,
+                size: 16,
                 color: color,
               ),
               SizedBox(height: 2),
@@ -45,13 +45,13 @@ class BottomNavBar extends StatelessWidget with BaseWidgetMixin {
                 child: Text(
                   iconList.keys.toList()[index],
                   maxLines: 1,
-                  style: regularBodyTextStyle,
+                  style: smallBodyTextStyle,
                 ),
               )
             ],
           );
         },
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Colors.white,
         activeIndex: bottomNavBarController.currentIndex,
         splashColor: Theme.of(context).colorScheme.primary,
         // notchAndCornersAnimation: borderRadiusAnimation,
