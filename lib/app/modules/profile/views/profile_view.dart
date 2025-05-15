@@ -15,12 +15,12 @@ class ProfileView extends BaseView<ProfileController> {
   @override
   PreferredSizeWidget? appBar(BuildContext context) => null;
 
-  List<SettingItem> items = [
+  final List<SettingItem> items = [
     SettingItem(
       icon: Icons.person,
       title: 'Profile Information',
       subtitle: 'Manage account details',
-      onTap: () {
+      onTap: () => () {
         // Handle navigation
       },
     ),
@@ -29,7 +29,7 @@ class ProfileView extends BaseView<ProfileController> {
       icon: Icons.person,
       title: 'Referral Code',
       subtitle: 'Invite your friends and earn rewards',
-      onTap: () {
+      onTap: () => () {
         // Handle navigation
       },
     ),
@@ -38,7 +38,7 @@ class ProfileView extends BaseView<ProfileController> {
       icon: Icons.info,
       title: 'About Exchanger',
       subtitle: 'Get to know more about Exchanger',
-      onTap: () {
+      onTap: () => () {
         // Handle navigation
       },
     ),
@@ -47,7 +47,7 @@ class ProfileView extends BaseView<ProfileController> {
       icon: Icons.help,
       title: 'FAQs',
       subtitle: 'Frequently asked questions',
-      onTap: () {
+      onTap: () => () {
         // Handle navigation
       },
     ),
@@ -56,10 +56,9 @@ class ProfileView extends BaseView<ProfileController> {
       icon: Icons.logout,
       title: 'Logout',
       subtitle: 'Sign out of your account',
-      onTap: () {
+      onTap: () => () {
         // Handle logout
         Get.find<PreferenceManagerImpl>().logout();
-
         Get.offAllNamed(Routes.WELCOME);
       },
       isSignOutBtn: true,
@@ -76,8 +75,8 @@ class ProfileView extends BaseView<ProfileController> {
       appName = packageInfo.appName;
     });
 
-    return SizedBox(
-      height: Get.height * 0.2,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -90,7 +89,7 @@ class ProfileView extends BaseView<ProfileController> {
           ),
           const SizedBox(height: 5),
           Text(
-            '© $year $appName. All rights reserved.',
+            '� $year $appName. All rights reserved.',
             style: extraSmallBodyTextStyle.copyWith(
               color: Colors.grey,
             ),
@@ -101,13 +100,13 @@ class ProfileView extends BaseView<ProfileController> {
   }
 
   _topStack() {
-    return SizedBox(
-      height: Get.height * 0.4,
+    return Container(
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           // Blue top container
           Container(
-            height: Get.height * 0.3,
+            height: Get.height * 0.25,
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.colorPrimary,
@@ -126,10 +125,9 @@ class ProfileView extends BaseView<ProfileController> {
 
           // White container with inward curve at top
           Positioned(
-            top: Get.height * 0.2,
+            top: Get.height * 0.17,
             left: 0,
             right: 0,
-            bottom: 0,
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -138,12 +136,16 @@ class ProfileView extends BaseView<ProfileController> {
                   topRight: Radius.circular(30),
                 ),
               ),
-              padding: EdgeInsets.only(top: Get.height * 0.08),
+              padding: EdgeInsets.only(
+                top: Get.height * 0.08,
+                bottom: 20,
+              ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Obx(() => Text(
                         controller.userData.value?.name?.toUpperCase() ??
-                            'User',
+                            'USER',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -152,36 +154,10 @@ class ProfileView extends BaseView<ProfileController> {
                   SizedBox(height: 4),
                   Obx(() => Text(
                         controller.userData.value?.email ??
-                            'Email not available',
+                            'You are not logged in',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
-                        ),
-                      )),
-                  SizedBox(height: 16),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Account Details',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Display user role
-                  Obx(() => Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                        child: Text(
-                          'Role: ${controller.userData.value?.role?.toUpperCase() ?? 'USER'}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
                         ),
                       )),
                 ],
@@ -191,7 +167,7 @@ class ProfileView extends BaseView<ProfileController> {
 
           // Profile avatar overlapping blue and white sections
           Positioned(
-            top: Get.height * 0.125,
+            top: Get.height * 0.11,
             left: 0,
             right: 0,
             child: Center(
@@ -203,7 +179,7 @@ class ProfileView extends BaseView<ProfileController> {
                     child: CircleAvatar(
                       radius: 52,
                       backgroundImage: NetworkImage(
-                        'https://ui-avatars.com/api/?background=random&name=${controller.userData.value?.name ?? "User"}',
+                        'https://ui-avatars.com/api/?background=random&name=${controller.userData.value?.name ?? "User"}&size=200',
                       ),
                     ),
                   ),
@@ -234,149 +210,61 @@ class ProfileView extends BaseView<ProfileController> {
 
   @override
   Widget body(BuildContext context) {
-    return SingleChildScrollView(
-      physics: BouncingScrollPhysics(),
-      child: Column(
-        children: [
-          // Top section with blue background, curved white container and avatar
-          _topStack(),
-
-          // Content section
-          Container(
-            color: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Settings items
-                ...items.map((item) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: item,
-                    )),
-
-                // Bottom section with version info
-              ],
+    return Stack(
+      children: [
+        // Fixed background parts
+        Column(
+          children: [
+            // Top section with blue background
+            Container(
+              height: Get.height * 0.2,
+              color: AppColors.colorPrimary,
             ),
+
+            // Remaining space as white
+            Expanded(
+              child: Container(
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+
+        // Scrollable content
+        SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top space for the blue section and avatar
+              SizedBox(height: Get.height * 0.35),
+
+              // Content section with settings items
+              Container(
+                color: Colors.white,
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Settings items
+                    ...items.map((item) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: item,
+                        )),
+                  ],
+                ),
+              ),
+
+              _buildBottomListSection(),
+            ],
           ),
+        ),
 
-          _buildBottomListSection(),
-        ],
-      ),
+        // Fixed top elements with curve and profile info
+        _topStack(),
+      ],
     );
-    // return Stack(
-    //   // Use Stack to layer widgets
-    //   children: [
-    //     // Blue Section (Curved Bottom)
-    //     Container(
-    //       height: 200, // Adjust height as needed
-    //       decoration: const BoxDecoration(
-    //         color: Colors.blue, // Or your specific blue color
-    //         borderRadius: BorderRadius.only(
-    //           bottomLeft: Radius.circular(20),
-    //           bottomRight: Radius.circular(20),
-    //         ),
-    //       ),
-    //     ),
-
-    //     // White Section (Curved Top)
-    //     Positioned(
-    //       // Position the white container
-    //       top: 100, // Adjust top position to control overlap
-    //       left: 20,
-    //       right: 20,
-    //       bottom: 20, // Or adjust as needed
-    //       child: Container(
-    //         decoration: BoxDecoration(
-    //           color: Colors.white,
-    //           borderRadius: BorderRadius.circular(10),
-    //         ),
-    //         padding: const EdgeInsets.all(20),
-    //         child: Column(
-    //           crossAxisAlignment: CrossAxisAlignment.start,
-    //           children: [
-    //             const SizedBox(height: 80), // Adjust spacing for the image
-    //             const Text(
-    //               'Account Details',
-    //               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    //             ),
-    //             const SizedBox(height: 20),
-    //             SettingItem(
-    //               icon: Icons.person,
-    //               title: 'Personal Information',
-    //               subtitle: 'Update your name, email, and password',
-    //               onTap: () {
-    //                 // Handle navigation
-    //               },
-    //             ),
-    //             const SizedBox(height: 20),
-    //             SettingItem(
-    //               icon: Icons.notifications,
-    //               title: 'Notifications',
-    //               subtitle: 'Choose which notifications you want to receive',
-    //               onTap: () {
-    //                 // Handle navigation
-    //               },
-    //             ),
-    //             const SizedBox(height: 20), // Add space before logout
-    //             Center(
-    //               child: ElevatedButton(
-    //                 onPressed: () {
-    //                   // Handle logout
-    //                 },
-    //                 style: ElevatedButton.styleFrom(
-    //                   backgroundColor: Colors.red,
-    //                   padding: const EdgeInsets.symmetric(
-    //                       horizontal: 40, vertical: 15),
-    //                   shape: RoundedRectangleBorder(
-    //                     borderRadius: BorderRadius.circular(10),
-    //                   ),
-    //                 ),
-    //                 child: const Text('Logout',
-    //                     style: TextStyle(color: Colors.white)),
-    //               ),
-    //             ),
-    //           ],
-    //         ),
-    //       ),
-    //     ),
-
-    //     // Profile Image (Centered and Overlapping)
-    //     Positioned(
-    //       top: 50, // Adjust top position to control image placement
-    //       left: 0,
-    //       right: 0,
-    //       child: Center(
-    //         child: CircleAvatar(
-    //           radius: 50,
-    //           backgroundImage: const NetworkImage(
-    //             'https://www.pngitem.com/pimgs/m/150-1503945_transparent-hd-user-png-free-download-png-download.png',
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //     // Name and email
-    //     Positioned(
-    //       top: 130, // Adjust top position to control image placement
-    //       left: 0,
-    //       right: 0,
-    //       child: Center(
-    //           child: Column(
-    //         children: const [
-    //           Text(
-    //             'Alfina Rosyida',
-    //             style: TextStyle(
-    //                 fontSize: 20,
-    //                 fontWeight: FontWeight.bold,
-    //                 color: Colors.white),
-    //           ),
-    //           Text(
-    //             'alfinarosyida@gmail.com',
-    //             style: TextStyle(fontSize: 16, color: Colors.white),
-    //           ),
-    //         ],
-    //       )),
-    //     ),
-    //   ],
-    // );
   }
 }

@@ -16,9 +16,9 @@ class BottomNavBar extends StatelessWidget with BaseWidgetMixin {
 
   Map<String, IconData> iconList = {
     "Home": FontAwesomeIcons.house,
-    "History": FontAwesomeIcons.stackExchange,
-    "Rate": FontAwesomeIcons.chartLine,
-    "Profile": FontAwesomeIcons.solidUser,
+    "History": FontAwesomeIcons.clockRotateLeft,
+    "Rate": FontAwesomeIcons.chartSimple,
+    "Profile": FontAwesomeIcons.userLarge,
   };
 
   final bottomNavBarController = BottomNavBarController();

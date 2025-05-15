@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/data/models/product_model.dart';
 import 'package:flutter/material.dart';
 
 class ProductItem extends StatelessWidget {
@@ -7,10 +9,12 @@ class ProductItem extends StatelessWidget {
     super.key,
     this.onTap,
     this.isMore = false,
+    this.product,
   });
 
   final VoidCallback? onTap;
   final bool isMore;
+  final ProductModel? product;
 
   @override
   Widget build(BuildContext context) {
@@ -30,18 +34,49 @@ class ProductItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Image.asset(
-                      isMore ? AppImages.more : AppImages.logo,
-                      fit: BoxFit.contain,
+                  child: SizedBox(
+                    width: 45,
+                    height: 45,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: isMore
+                          ? Image.asset(
+                              AppImages.more,
+                              fit: BoxFit.contain,
+                            )
+                          : (product != null && product!.image != null)
+                              ? CachedNetworkImage(
+                                  imageUrl: product!.image!,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset(
+                                    AppImages.logo,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  fit: BoxFit.contain,
+                                )
+                              : Image.asset(
+                                  AppImages.logo,
+                                  fit: BoxFit.contain,
+                                ),
                     ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: Text(
-                    isMore ? "More" : 'Product',
+                    isMore ? "More" : product?.name ?? 'Product',
                     style: smallBodyTextStyle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

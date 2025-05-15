@@ -96,7 +96,7 @@ class HomeView extends BaseView<HomeController> {
           Obx(() => CircleAvatar(
                 radius: 35,
                 backgroundImage: NetworkImage(
-                  'https://ui-avatars.com/api/?background=random&name=${controller.userData.value?.name ?? "User"}',
+                  'https://ui-avatars.com/api/?background=random&name=${controller.userData.value?.name ?? "User"}&size=200',
                 ),
               )),
           SizedBox(width: 15),
@@ -110,7 +110,7 @@ class HomeView extends BaseView<HomeController> {
                   style: smallBodyTextStyle,
                 ),
                 Obx(() => Text(
-                      controller.userData.value?.name?.toUpperCase() ?? 'User',
+                      controller.userData.value?.name?.toUpperCase() ?? 'USER',
                       style: regularBodyTextStyle.copyWith(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -157,32 +157,97 @@ class HomeView extends BaseView<HomeController> {
                 ),
               ),
             ),
-            GridView.builder(
-              padding: EdgeInsets.fromLTRB(10, 5, 10, 20),
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 100, // Maximum width per item
-                childAspectRatio: 0.8, // Adjust based on content
-                // crossAxisSpacing: 10,
-                // mainAxisSpacing: 10,
-              ),
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                if (index == 7) {
-                  return ProductItem(
-                    onTap: () {
-                      // context.pushNamed(Routes.allServices.name);
-                    },
-                    isMore: true,
-                  );
-                }
-
-                return ProductItem(
-                  onTap: () => print('Product $index tapped'),
+            Obx(() {
+              // Show loading while fetching products
+              if (controller.isLoading.value) {
+                return Container(
+                  height: 200,
+                  padding: EdgeInsets.all(20),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 );
-              },
-            ),
+              }
+
+              // Error state
+              if (controller.error.value.isNotEmpty) {
+                return Container(
+                  height: 150,
+                  padding: EdgeInsets.all(20),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Failed to load products',
+                          style:
+                              smallBodyTextStyle.copyWith(color: Colors.grey),
+                        ),
+                        SizedBox(height: 10),
+                        TextButton(
+                          onPressed: controller.refreshData,
+                          child: Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Empty state
+              if (controller.products.isEmpty) {
+                return Container(
+                  height: 150,
+                  padding: EdgeInsets.all(20),
+                  child: Center(
+                    child: Text(
+                      'No exchange products available',
+                      style: smallBodyTextStyle.copyWith(color: Colors.grey),
+                    ),
+                  ),
+                );
+              }
+
+              // Products grid
+              return GridView.builder(
+                padding: EdgeInsets.fromLTRB(10, 5, 10, 20),
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 100, // Maximum width per item
+                  childAspectRatio: 0.8, // Adjust based on content
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                ),
+                itemCount: controller.products.length > 7
+                    ? 8 // Show 7 products + "More" button
+                    : controller.products.length +
+                        1, // All products + "More" button
+                itemBuilder: (context, index) {
+                  // If this is the last item and we have 7 or more products, or if we have fewer products and this is the last one
+                  bool isLastItem =
+                      (controller.products.length > 7 && index == 7) ||
+                          (controller.products.length <= 7 &&
+                              index == controller.products.length);
+
+                  if (isLastItem) {
+                    return ProductItem(
+                      onTap: () {
+                        // Navigate to all products/rates page
+                        Get.toNamed(Routes.RATE);
+                      },
+                      isMore: true,
+                    );
+                  }
+
+                  return ProductItem(
+                    product: controller.products[index],
+                    onTap: () => print(
+                        'Product ${controller.products[index].name} tapped'),
+                  );
+                },
+              );
+            }),
           ],
         ),
       ),

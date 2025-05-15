@@ -1,11 +1,11 @@
-import 'dart:convert';
-
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
 import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
 import 'package:exachanger_get_app/app/data/models/blog_model.dart';
+import 'package:exachanger_get_app/app/data/models/product_model.dart';
 import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/data/models/user_model.dart';
 import 'package:exachanger_get_app/app/data/repository/blog/blog_repository.dart';
+import 'package:exachanger_get_app/app/data/repository/product/product_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/transaction/transaction_repository.dart';
 import 'package:exachanger_get_app/app/modules/splash/controllers/splash_controller.dart';
 import 'package:exachanger_get_app/app/services/data_service.dart';
@@ -23,6 +23,9 @@ class HomeController extends BaseController {
 
   final TransactionRepository transactionRepository =
       Get.find(tag: (TransactionRepository).toString());
+
+  final ProductRepository productRepository =
+      Get.find(tag: (ProductRepository).toString());
 
   // DataService for sharing data between controllers
   DataService? _dataService;
@@ -51,18 +54,68 @@ class HomeController extends BaseController {
   Rx<List<TransactionModel>> transactionList = Rx<List<TransactionModel>>([]);
   List<TransactionModel> get transactions => transactionList.value;
 
+  // products
+  Rx<List<ProductModel>> productList = Rx<List<ProductModel>>([]);
+  List<ProductModel> get products => productList.value;
+
   // User data
   final PreferenceManagerImpl preferenceManager =
       Get.find<PreferenceManagerImpl>();
   final Rx<UserModel?> userData = Rx<UserModel?>(null);
 
+  // Data loading state
+  final RxBool isLoading = false.obs;
+  final RxString error = "".obs;
+
   // Load user data
   Future<void> loadUserData() async {
     try {
-      final userDataJson = await preferenceManager.getString('user_data');
-      if (userDataJson.isNotEmpty) {
-        final userMap = jsonDecode(userDataJson);
-        userData.value = UserModel.fromJson(userMap);
+      // First try to get from Get.find which would be faster
+      try {
+        if (Get.isRegistered<UserModel>(tag: "current_user")) {
+          UserModel user = Get.find<UserModel>(tag: "current_user");
+          userData.value = user;
+          print('User data fetched from Get: ${user.name}');
+          return;
+        } else {
+          print('UserModel not registered with tag "current_user"');
+        }
+      } catch (e) {
+        print('Error accessing user data from Get storage: $e');
+        // Fall back to getting reactive object
+        try {
+          if (Get.isRegistered<Rx<UserModel?>>(tag: "user_data")) {
+            Rx<UserModel?> rxUser = Get.find<Rx<UserModel?>>(tag: "user_data");
+            if (rxUser.value != null) {
+              userData.value = rxUser.value;
+              print(
+                  'User data fetched from reactive object: ${rxUser.value?.name}');
+              return;
+            } else {
+              print('Reactive user data found but value is null');
+            }
+          } else {
+            print('Reactive user data not registered with tag "user_data"');
+          }
+        } catch (e) {
+          print('Error accessing reactive user data: $e');
+        }
+      }
+
+      // Fall back to loading from preferences
+      final userFromPrefs = await preferenceManager.getUserData();
+      if (userFromPrefs != null) {
+        userData.value = userFromPrefs;
+        print('User data loaded from preferences: ${userFromPrefs.name}');
+
+        // Store for future use
+        if (Get.isRegistered<UserModel>(tag: "current_user")) {
+          Get.delete<UserModel>(tag: "current_user");
+        }
+        Get.put<UserModel>(userFromPrefs, tag: "current_user", permanent: true);
+        print('User data registered with GetX');
+      } else {
+        print('No user data found in preferences');
       }
     } catch (e) {
       print('Error loading user data: $e');
@@ -79,6 +132,8 @@ class HomeController extends BaseController {
           blogList.value = List<BlogModel>.from(dataService.blogList.value);
           transactionList.value =
               List<TransactionModel>.from(dataService.transactionList.value);
+          productList.value =
+              List<ProductModel>.from(dataService.productList.value);
           print("All data loaded from DataService");
           return;
         }
@@ -113,14 +168,23 @@ class HomeController extends BaseController {
               "Transactions loaded from splash controller: ${transactionList.value.length}");
         }
 
+        if (splashController.productList.value.isNotEmpty) {
+          productList.value =
+              List<ProductModel>.from(splashController.productList.value);
+          print(
+              "Products loaded from splash controller: ${productList.value.length}");
+        }
+
         // Update DataService as well for future use
         if (promoList.value.isNotEmpty &&
             blogList.value.isNotEmpty &&
-            transactionList.value.isNotEmpty) {
+            transactionList.value.isNotEmpty &&
+            productList.value.isNotEmpty) {
           dataService.setData(
               promos: promoList.value,
               blogs: blogList.value,
-              transactions: transactionList.value);
+              transactions: transactionList.value,
+              products: productList.value);
         }
       } catch (e) {
         print("Method 1 failed: $e");
@@ -135,6 +199,8 @@ class HomeController extends BaseController {
               Get.find<Rx<List<BlogModel>>>(tag: "cached_blogs");
           final cachedTransactions =
               Get.find<Rx<List<TransactionModel>>>(tag: "cached_transactions");
+          final cachedProducts =
+              Get.find<Rx<List<ProductModel>>>(tag: "cached_products");
 
           if (cachedPromos.value.isNotEmpty) {
             promoList.value = List<PromoModel>.from(cachedPromos.value);
@@ -153,14 +219,22 @@ class HomeController extends BaseController {
                 "Transactions loaded from cached data: ${transactionList.value.length}");
           }
 
+          if (cachedProducts.value.isNotEmpty) {
+            productList.value = List<ProductModel>.from(cachedProducts.value);
+            print(
+                "Products loaded from cached data: ${productList.value.length}");
+          }
+
           // Update DataService as well for future use
           if (promoList.value.isNotEmpty &&
               blogList.value.isNotEmpty &&
-              transactionList.value.isNotEmpty) {
+              transactionList.value.isNotEmpty &&
+              productList.value.isNotEmpty) {
             dataService.setData(
                 promos: promoList.value,
                 blogs: blogList.value,
-                transactions: transactionList.value);
+                transactions: transactionList.value,
+                products: productList.value);
           }
         } catch (e) {
           print("Method 2 failed: $e");
@@ -170,7 +244,8 @@ class HomeController extends BaseController {
       // If we successfully got data from either method, return early
       if (promoList.value.isNotEmpty &&
           blogList.value.isNotEmpty &&
-          transactionList.value.isNotEmpty) {
+          transactionList.value.isNotEmpty &&
+          productList.value.isNotEmpty) {
         print("All data loaded from cache");
         return;
       }
@@ -181,6 +256,8 @@ class HomeController extends BaseController {
 
     // If we got here, we need to fetch the data
     print("Fetching fresh data in HomeController");
+    isLoading.value = true;
+    error.value = "";
 
     // Fetch promos
     var promoService = promoRepository.getAllPromos();
@@ -189,6 +266,7 @@ class HomeController extends BaseController {
       print("Promos fetched in HomeController: ${data.length}");
     }, onError: (error) {
       showErrorMessage(error.toString());
+      this.error.value = error.toString();
     });
 
     // Fetch blogs
@@ -198,6 +276,7 @@ class HomeController extends BaseController {
       print("Blogs fetched in HomeController: ${data.length}");
     }, onError: (error) {
       showErrorMessage(error.toString());
+      this.error.value = error.toString();
     });
 
     // Fetch transactions
@@ -205,20 +284,37 @@ class HomeController extends BaseController {
     callDataService(transactionService, onSuccess: (data) {
       transactionList.value = data;
       print("Transactions fetched in HomeController: ${data.length}");
+    }, onError: (error) {
+      showErrorMessage(error.toString());
+      this.error.value = error.toString();
+    });
+
+    // Fetch products
+    var productService = productRepository.getAllProducts();
+    callDataService(productService, onSuccess: (data) {
+      productList.value = data;
+      print("Products fetched in HomeController: ${data.length}");
+      isLoading.value = false;
 
       // Update DataService with newly fetched data
       dataService.setData(
           promos: promoList.value,
           blogs: blogList.value,
-          transactions: transactionList.value);
+          transactions: transactionList.value,
+          products: productList.value);
     }, onError: (error) {
       showErrorMessage(error.toString());
+      this.error.value = error.toString();
+      isLoading.value = false;
     });
   }
 
   // Refresh data from API (for pull-to-refresh functionality)
   Future<void> refreshData() async {
     try {
+      isLoading.value = true;
+      error.value = "";
+
       // Make sure we have access to the DataService
       if (_dataService != null) {
         // Use DataService to refresh all data at once
@@ -229,7 +325,10 @@ class HomeController extends BaseController {
         blogList.value = List<BlogModel>.from(dataService.blogList.value);
         transactionList.value =
             List<TransactionModel>.from(dataService.transactionList.value);
+        productList.value =
+            List<ProductModel>.from(dataService.productList.value);
 
+        isLoading.value = false;
         print("All data refreshed through DataService");
         return;
       } else {
@@ -238,6 +337,7 @@ class HomeController extends BaseController {
     } catch (e) {
       print(
           "DataService refresh failed, falling back to individual API calls: $e");
+      error.value = e.toString();
 
       // Fall back to individual API calls if DataService refresh fails
 
@@ -251,6 +351,7 @@ class HomeController extends BaseController {
         },
         onError: (error) {
           showErrorMessage(error.toString());
+          this.error.value = error.toString();
         },
       );
 
@@ -264,6 +365,7 @@ class HomeController extends BaseController {
         },
         onError: (error) {
           showErrorMessage(error.toString());
+          this.error.value = error.toString();
         },
       );
 
@@ -277,9 +379,33 @@ class HomeController extends BaseController {
         },
         onError: (error) {
           showErrorMessage(error.toString());
+          this.error.value = error.toString();
         },
       );
+
+      // Fetch products
+      await callDataService(
+        productRepository.getAllProducts(),
+        onSuccess: (data) {
+          productList.value = data;
+          // Update the DataService with new products
+          dataService.setData(products: data);
+        },
+        onError: (error) {
+          showErrorMessage(error.toString());
+          this.error.value = error.toString();
+        },
+      );
+    } finally {
+      isLoading.value = false;
     }
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    // Refresh user data when the home screen becomes active
+    loadUserData();
   }
 
   @override

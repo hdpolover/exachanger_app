@@ -31,7 +31,7 @@ class MainView extends BaseView<MainController> {
       backgroundColor: AppColors.colorPrimary,
       shape: CircleBorder(),
       child: Icon(
-        FontAwesomeIcons.hammer,
+        FontAwesomeIcons.arrowsRotate,
         color: Colors.white,
       ),
       onPressed: () {

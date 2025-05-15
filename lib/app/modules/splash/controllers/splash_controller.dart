@@ -1,12 +1,12 @@
-import 'dart:convert';
-
 import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
 import 'package:exachanger_get_app/app/data/models/blog_model.dart';
+import 'package:exachanger_get_app/app/data/models/product_model.dart';
 import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/data/models/transaction_model.dart';
 import 'package:exachanger_get_app/app/data/models/user_model.dart';
 import 'package:exachanger_get_app/app/data/remote/auth/auth_remote_data_source.dart';
 import 'package:exachanger_get_app/app/data/repository/blog/blog_repository.dart';
+import 'package:exachanger_get_app/app/data/repository/product/product_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/promo/promo_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/transaction/transaction_repository.dart';
 import 'package:exachanger_get_app/app/modules/welcome/controllers/welcome_controller.dart';
@@ -27,6 +27,9 @@ class SplashController extends BaseController {
 
   final TransactionRepository transactionRepository =
       Get.find(tag: (TransactionRepository).toString());
+
+  final ProductRepository productRepository =
+      Get.find(tag: (ProductRepository).toString());
 
   final AuthRemoteDataSource authRemoteDataSource =
       Get.find(tag: (AuthRemoteDataSource).toString());
@@ -63,6 +66,7 @@ class SplashController extends BaseController {
   Rx<List<PromoModel>> promoList = Rx<List<PromoModel>>([]);
   Rx<List<BlogModel>> blogList = Rx<List<BlogModel>>([]);
   Rx<List<TransactionModel>> transactionList = Rx<List<TransactionModel>>([]);
+  Rx<List<ProductModel>> productList = Rx<List<ProductModel>>([]);
 
   // User data container
   Rx<UserModel?> userData = Rx<UserModel?>(null);
@@ -86,7 +90,7 @@ class SplashController extends BaseController {
 
       // Try to get some data to verify token validity
       try {
-        statusText.value = "Verifying token...";
+        statusText.value = "Authenticating...";
         // Make a simple request to verify token
         await transactionRepository.getAllTransactions();
         return true; // Token is valid
@@ -170,12 +174,28 @@ class SplashController extends BaseController {
         },
       );
 
+      // Get products
+      statusText.value = "Loading products...";
+      await callDataService(
+        productRepository.getAllProducts(),
+        onSuccess: (data) {
+          productList.value = data;
+        },
+        onError: (error) {
+          showErrorMessage(error.toString());
+        },
+        onStart: () {
+          // Don't show loading overlay, just update status text
+        },
+      );
+
       // Update DataService with the fetched data
       try {
         dataService.setData(
           promos: promoList.value,
           blogs: blogList.value,
           transactions: transactionList.value,
+          products: productList.value,
         );
         print("DataService updated with preloaded data");
       } catch (e) {
@@ -187,20 +207,35 @@ class SplashController extends BaseController {
     } catch (e) {
       showErrorMessage("Error loading data: ${e.toString()}");
     }
-  }
+  } // Load user data from preferences
 
-  // Load user data from preferences
   Future<void> loadUserData() async {
     try {
       statusText.value = "Loading user data...";
-      final userDataJson = await preferenceManager.getString('user_data');
-      if (userDataJson.isNotEmpty) {
-        final userMap = jsonDecode(userDataJson);
-        userData.value = UserModel.fromJson(userMap);
+      // Try to use the preferenceManager's getUserData method for better encapsulation
+      final user = await preferenceManager.getUserData();
+
+      if (user != null) {
+        userData.value = user;
         print("User data loaded: ${userData.value?.name}");
 
+        // First remove any existing registrations to prevent duplicates
+        if (Get.isRegistered<UserModel>(tag: "current_user")) {
+          Get.delete<UserModel>(tag: "current_user");
+        }
+        if (Get.isRegistered<Rx<UserModel?>>(tag: "user_data")) {
+          Get.delete<Rx<UserModel?>>(tag: "user_data");
+        }
+
         // Make user data available across the app
-        Get.put(userData, tag: "user_data", permanent: true);
+        // Use a constant tag for easier access - register the actual UserModel
+        Get.put<UserModel>(user, tag: "current_user", permanent: true);
+        // Also put the Rx wrapper for reactive updates
+        Get.put<Rx<UserModel?>>(userData, tag: "user_data", permanent: true);
+
+        print("User data registered with GetX: ${user.name}");
+      } else {
+        print("No user data found or it's invalid");
       }
     } catch (e) {
       print('Error loading user data in SplashController: $e');
@@ -213,6 +248,9 @@ class SplashController extends BaseController {
     print("Promos count: ${promoList.value.length}");
     print("Blogs count: ${blogList.value.length}");
     print("Transactions count: ${transactionList.value.length}");
+    print("Products count: ${productList.value.length}");
+    print(
+        "User data: ${userData.value != null ? 'Loaded (${userData.value!.name})' : 'Not loaded'}");
   }
 
   @override
@@ -226,6 +264,9 @@ class SplashController extends BaseController {
         bool isTokenValid = await verifyAndRefreshToken();
 
         if (isTokenValid) {
+          // Load user data first
+          await loadUserData();
+
           // Fetch app data
           await fetchAppData();
 
@@ -236,6 +277,7 @@ class SplashController extends BaseController {
           Get.put(promoList, tag: "cached_promos", permanent: true);
           Get.put(blogList, tag: "cached_blogs", permanent: true);
           Get.put(transactionList, tag: "cached_transactions", permanent: true);
+          Get.put(productList, tag: "cached_products", permanent: true);
 
           // Navigate to main screen
           Get.offNamed(Routes.MAIN);
