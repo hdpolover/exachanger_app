@@ -1,5 +1,7 @@
 import 'package:exachanger_get_app/app/data/remote/metadata/metadata_remote_data_source.dart';
 import 'package:exachanger_get_app/app/data/remote/metadata/metadata_remote_data_source_impl.dart';
+import 'package:exachanger_get_app/app/data/remote/product/product_remote_data_source.dart';
+import 'package:exachanger_get_app/app/data/remote/product/product_remote_data_source_impl.dart';
 import 'package:get/get.dart';
 
 import '../data/remote/auth/auth_remote_data_source.dart';
@@ -44,6 +46,11 @@ class RemoteSourceBindings implements Bindings {
     Get.lazyPut<TransactionRemoteDataSource>(
       () => TransactionRemoteDataSourceImpl(),
       tag: (TransactionRemoteDataSource).toString(),
+    );
+    // product remote data source
+    Get.lazyPut<ProductRemoteDataSource>(
+      () => ProductRemoteDataSourceImpl(),
+      tag: (ProductRemoteDataSource).toString(),
     );
   }
 }

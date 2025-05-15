@@ -1,4 +1,4 @@
-import 'package:exachanger_get_app/app/data/model/metadata_model.dart';
+import 'package:exachanger_get_app/app/data/models/metadata_model.dart';
 import 'package:exachanger_get_app/app/data/remote/metadata/metadata_remote_data_source.dart';
 import 'package:exachanger_get_app/app/data/repository/metadata/metadata_repository.dart';
 import 'package:get/get.dart';

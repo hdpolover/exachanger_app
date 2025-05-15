@@ -1,4 +1,4 @@
-import 'package:exachanger_get_app/app/data/model/promo_model.dart';
+import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/data/repository/promo/promo_repository.dart';
 import 'package:get/get.dart';
 

@@ -1,4 +1,4 @@
-import '../../model/signin_model.dart';
+import '../../models/signin_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<SigninModel> signIn(Map<String, dynamic> data);

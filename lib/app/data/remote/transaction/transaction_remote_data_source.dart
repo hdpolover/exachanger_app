@@ -1,4 +1,4 @@
-import '../../model/transaction_model.dart';
+import '../../models/transaction_model.dart';
 
 abstract class TransactionRemoteDataSource {
   Future<List<TransactionModel>> getAll();

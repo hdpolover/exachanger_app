@@ -1,5 +1,5 @@
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
-import 'package:exachanger_get_app/app/data/model/metadata_model.dart';
+import 'package:exachanger_get_app/app/data/models/metadata_model.dart';
 import 'package:exachanger_get_app/app/data/repository/metadata/metadata_repository.dart';
 import 'package:get/get.dart';
 

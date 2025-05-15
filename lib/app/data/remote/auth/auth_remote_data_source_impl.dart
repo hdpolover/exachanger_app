@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:exachanger_get_app/app/data/model/api_response_model.dart';
+import 'package:exachanger_get_app/app/data/models/api_response_model.dart';
 
 import '../../../core/base/base_remote_source.dart';
 import '../../../core/values/app_endpoints.dart';
 import '../../../network/dio_provider.dart';
-import '../../model/signin_model.dart';
+import '../../models/signin_model.dart';
 import 'auth_remote_data_source.dart';
 
 class AuthRemoteDataSourceImpl extends BaseRemoteSource

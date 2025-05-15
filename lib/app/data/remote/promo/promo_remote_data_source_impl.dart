@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
-import 'package:exachanger_get_app/app/data/model/promo_model.dart';
+import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/data/remote/promo/promo_remote_data_source.dart';
 
 import '../../../core/base/base_remote_source.dart';
 import '../../../core/values/app_endpoints.dart';
 import '../../../network/dio_provider.dart';
-import '../../model/api_response_model.dart';
-import '../../model/pagination_response_model.dart';
+import '../../models/api_response_model.dart';
+import '../../models/pagination_response_model.dart';
 
 class PromoRemoteDataSourceImpl extends BaseRemoteSource
     implements PromoRemoteDataSource {

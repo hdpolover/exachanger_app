@@ -2,8 +2,8 @@ import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
-import 'package:exachanger_get_app/app/data/model/blog_model.dart';
-import 'package:exachanger_get_app/app/data/model/promo_model.dart';
+import 'package:exachanger_get_app/app/data/models/blog_model.dart';
+import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
@@ -33,15 +33,21 @@ class HomeView extends BaseView<HomeController> {
   @override
   Widget body(BuildContext context) {
     return Obx(
-      () => SingleChildScrollView(
-        child: Column(
-          children: [
-            _topSection(),
-            _exchangeSection(),
-            if (controller.transactions.isNotEmpty) _transactionSection(),
-            _whatsnewSection(),
-            _newsSection(),
-          ],
+      () => RefreshIndicator(
+        onRefresh: () async {
+          // Call the refresh method when user pulls down to refresh
+          await controller.refreshData();
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _topSection(),
+              _exchangeSection(),
+              if (controller.transactions.isNotEmpty) _transactionSection(),
+              _whatsnewSection(),
+              _newsSection(),
+            ],
+          ),
         ),
       ),
     );
@@ -87,11 +93,12 @@ class HomeView extends BaseView<HomeController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 35,
-            backgroundImage: AssetImage(AppImages.logo),
-            child: Text('U'),
-          ),
+          Obx(() => CircleAvatar(
+                radius: 35,
+                backgroundImage: NetworkImage(
+                  'https://ui-avatars.com/api/?background=random&name=${controller.userData.value?.name ?? "User"}',
+                ),
+              )),
           SizedBox(width: 15),
           Expanded(
             child: Column(
@@ -102,13 +109,13 @@ class HomeView extends BaseView<HomeController> {
                   getGreetingTimeText() + ',',
                   style: smallBodyTextStyle,
                 ),
-                Text(
-                  'User',
-                  style: regularBodyTextStyle.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
+                Obx(() => Text(
+                      controller.userData.value?.name?.toUpperCase() ?? 'User',
+                      style: regularBodyTextStyle.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    )),
               ],
             ),
           ),

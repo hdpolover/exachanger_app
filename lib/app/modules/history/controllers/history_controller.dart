@@ -3,7 +3,7 @@ import 'package:exachanger_get_app/app/data/repository/transaction/transaction_r
 import 'package:exachanger_get_app/app/modules/home/controllers/home_controller.dart';
 import 'package:get/get.dart';
 
-import '../../../data/model/transaction_model.dart';
+import '../../../data/models/transaction_model.dart';
 
 class HistoryController extends BaseController {
   final TransactionRepository transactionRepository =

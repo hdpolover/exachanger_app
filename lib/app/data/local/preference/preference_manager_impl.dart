@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../network/dio_provider.dart';
+import '../../models/signin_model.dart';
+import '../../models/user_model.dart';
 import '/app/data/local/preference/preference_manager.dart';
 
 class PreferenceManagerImpl implements PreferenceManager {
@@ -9,9 +13,70 @@ class PreferenceManagerImpl implements PreferenceManager {
   Future<void> logout() async {
     await remove('access_token');
     await remove('refresh_token');
+    await remove('user_data');
     await setBool('is_signed_in', false);
     // Clear auth token from Dio
     DioProvider.clearAuthToken();
+  }
+
+  // Save user data to shared preferences
+  Future<bool> saveUserData(UserModel userData) async {
+    final userJson = jsonEncode(userData.toJson());
+    return await setString('user_data', userJson);
+  }
+
+  // Get user data from shared preferences
+  Future<UserModel?> getUserData() async {
+    final userJson = await getString('user_data');
+    if (userJson.isEmpty) {
+      return null;
+    }
+    try {
+      final Map<String, dynamic> userMap = jsonDecode(userJson);
+      return UserModel.fromJson(userMap);
+    } catch (e) {
+      print('Error parsing user data: $e');
+      return null;
+    }
+  }
+
+  // Handle saving user data from sign-in response
+  Future<bool> saveUserDataFromSignin(SigninModel signinData) async {
+    try {
+      // Save tokens and sign-in status
+      await setString("access_token", signinData.accessToken!);
+      await setString("refresh_token", signinData.refreshToken!);
+      await setBool("is_signed_in", true);
+
+      // Save user data if present
+      if (signinData.data != null) {
+        // Create user model from signin data
+        final Map<String, dynamic> userData = {
+          'id': signinData.data!.id,
+          'email': signinData.data!.email,
+          'name': signinData.data!.name,
+          'role': signinData.data!.role,
+          'type': signinData.data!.type,
+          'permissions': signinData.data!.permissions != null
+              ? {
+                  'mobile': signinData.data!.permissions!.mobile
+                      ?.map((m) => {'key': m.key, 'access': m.access})
+                      .toList(),
+                  'app': signinData.data!.permissions!.app
+                }
+              : null,
+          'date': signinData.data!.date,
+          'expired': signinData.data!.expired,
+        };
+
+        // Save user data as JSON string
+        return await setString('user_data', jsonEncode(userData));
+      }
+      return true;
+    } catch (e) {
+      print('Error saving user data: $e');
+      return false;
+    }
   }
 
   @override

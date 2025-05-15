@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
-import 'package:exachanger_get_app/app/data/model/blog_detail_model.dart';
-import 'package:exachanger_get_app/app/data/model/blog_model.dart';
+import 'package:exachanger_get_app/app/data/models/blog_detail_model.dart';
+import 'package:exachanger_get_app/app/data/models/blog_model.dart';
 import 'package:exachanger_get_app/app/data/remote/blog/blog_remote_data_source.dart';
 
 import '../../../core/base/base_remote_source.dart';
 import '../../../core/values/app_endpoints.dart';
 import '../../../network/dio_provider.dart';
-import '../../model/api_response_model.dart';
-import '../../model/pagination_response_model.dart';
+import '../../models/api_response_model.dart';
+import '../../models/pagination_response_model.dart';
 
 class BlogRemoteDataSourceImpl extends BaseRemoteSource
     implements BlogRemoteDataSource {

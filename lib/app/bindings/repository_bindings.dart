@@ -3,6 +3,8 @@ import 'package:exachanger_get_app/app/data/repository/auth/auth_repository_impl
 import 'package:exachanger_get_app/app/data/repository/blog/blog_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/metadata/metadata_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/metadata/metadata_repository_impl.dart';
+import 'package:exachanger_get_app/app/data/repository/product/product_repository.dart';
+import 'package:exachanger_get_app/app/data/repository/product/product_repository_impl.dart';
 import 'package:exachanger_get_app/app/data/repository/promo/promo_repository_impl.dart';
 import 'package:get/get.dart';
 
@@ -43,6 +45,11 @@ class RepositoryBindings implements Bindings {
     Get.lazyPut<TransactionRepository>(
       () => TransactionRepositoryImpl(),
       tag: (TransactionRepository).toString(),
+    );
+    // product repository
+    Get.lazyPut<ProductRepository>(
+      () => ProductRepositoryImpl(),
+      tag: (ProductRepository).toString(),
     );
   }
 }

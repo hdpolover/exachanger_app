@@ -56,6 +56,8 @@ class DataModel {
   final String? id;
   final String? email;
   final String? name;
+  final String? role;
+  final int? type;
   final PermissionsModel? permissions;
   final String? date;
   final String? expired;
@@ -64,6 +66,8 @@ class DataModel {
     this.id,
     this.email,
     this.name,
+    this.role,
+    this.type,
     this.permissions,
     this.date,
     this.expired,
@@ -74,6 +78,8 @@ class DataModel {
       id: json['id'],
       email: json['email'],
       name: json['name'],
+      role: json['role'],
+      type: json['type'],
       permissions: json['permissions'] != null
           ? PermissionsModel.fromJson(json['permissions'])
           : null,

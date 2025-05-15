@@ -1,4 +1,4 @@
-import '../../model/promo_model.dart';
+import '../../models/promo_model.dart';
 
 abstract class PromoRepository {
   Future<List<PromoModel>> getAllPromos();

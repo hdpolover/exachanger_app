@@ -1,5 +1,5 @@
-import '../../model/promo_model.dart';
-import '../../model/blog_model.dart';
+import '../../models/promo_model.dart';
+import '../../models/blog_model.dart';
 
 abstract class PromoRemoteDataSource {
   Future<List<PromoModel>> getAll();

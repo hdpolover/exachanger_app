@@ -1,14 +1,22 @@
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/data/models/product_model.dart';
+import 'package:exachanger_get_app/app/data/models/rate_model.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../core/utils/common_functions.dart';
 
 class RateItem extends StatelessWidget {
-  const RateItem({super.key});
+  final ProductModel product;
 
-  _rateDetailItem() {
+  const RateItem({
+    super.key,
+    required this.product,
+  });
+
+  Widget _rateDetailItem(RateModel rate) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -19,21 +27,42 @@ class RateItem extends StatelessWidget {
           color: Colors.black,
         ),
         SizedBox(width: 5),
-        Image.asset(
-          AppImages.logo,
-          width: 30,
-          height: 30,
-        ),
+        rate.product?.image != null
+            ? CachedNetworkImage(
+                imageUrl: rate.product!.image!,
+                width: 15,
+                height: 15,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  width: 15,
+                  height: 15,
+                  color: Colors.grey[200],
+                ),
+                errorWidget: (context, url, error) => Image.asset(
+                  AppImages.noImage,
+                  width: 15,
+                  height: 15,
+                ),
+              )
+            : Image.asset(
+                AppImages.logo,
+                width: 15,
+                height: 15,
+              ),
         SizedBox(width: 5),
         Text(
-          'PayPal',
+          rate.product?.name ?? 'Unknown',
           style: smallBodyTextStyle.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
         Spacer(),
         Text(
-          CommonFunctions.formatUSD(0.8),
+          CommonFunctions.formatUSD(
+            rate.pricing is int
+                ? (rate.pricing as int).toDouble()
+                : (rate.pricing ?? 0.0),
+          ),
           style: regularBodyTextStyle.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -42,16 +71,19 @@ class RateItem extends StatelessWidget {
     );
   }
 
-  _rateDetailList() {
+  Widget _rateDetailList() {
+    final activeRates =
+        product.rates?.where((r) => r.status == 'active').toList() ?? [];
+
     return ListView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: true,
-      itemCount: 5,
+      itemCount: activeRates.length,
       physics: NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _rateDetailItem(),
+          child: _rateDetailItem(activeRates[index]),
         );
       },
     );
@@ -65,18 +97,48 @@ class RateItem extends StatelessWidget {
       children: [
         Row(
           children: [
-            Image.asset(
-              AppImages.logo,
-              width: 40,
-              height: 40,
-            ),
+            product.image != null
+                ? CachedNetworkImage(
+                    imageUrl: product.image!,
+                    width: 25,
+                    height: 25,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: 25,
+                      height: 25,
+                      color: Colors.grey[200],
+                    ),
+                    errorWidget: (context, url, error) => Image.asset(
+                      AppImages.noImage,
+                      width: 25,
+                      height: 25,
+                    ),
+                  )
+                : Image.asset(
+                    AppImages.logo,
+                    width: 25,
+                    height: 25,
+                  ),
             SizedBox(width: 10),
             Text(
-              'PayPal',
+              product.name ?? 'Unknown',
               style: regularBodyTextStyle.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
+            // if (product.category != null)
+            //   Padding(
+            //     padding: const EdgeInsets.only(left: 8.0),
+            //     child: Chip(
+            //       label: Text(
+            //         product.category!,
+            //         style: TextStyle(fontSize: 10),
+            //       ),
+            //       backgroundColor: Colors.grey.shade200,
+            //       padding: EdgeInsets.zero,
+            //       labelPadding: EdgeInsets.symmetric(horizontal: 8),
+            //     ),
+            //   ),
           ],
         ),
         SizedBox(height: 15),
@@ -99,13 +161,19 @@ class RateItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Paypal daily rate per ${CommonFunctions.formatUSD(1)}",
+                "${product.name} daily rate per ${CommonFunctions.formatUSD(1.0)}",
                 style: smallBodyTextStyle.copyWith(
                   color: Colors.grey,
                 ),
               ),
               SizedBox(height: 10),
-              _rateDetailList(),
+              if (product.rates == null || product.rates!.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Center(child: Text('No rates available')),
+                )
+              else
+                _rateDetailList(),
             ],
           ),
         ),

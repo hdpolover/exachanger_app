@@ -141,21 +141,23 @@ class ProfileView extends BaseView<ProfileController> {
               padding: EdgeInsets.only(top: Get.height * 0.08),
               child: Column(
                 children: [
-                  Text(
-                    'Alfina Rosyida',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Obx(() => Text(
+                        controller.userData.value?.name?.toUpperCase() ??
+                            'User',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )),
                   SizedBox(height: 4),
-                  Text(
-                    'alfinarosyida@gmail.com',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  Obx(() => Text(
+                        controller.userData.value?.email ??
+                            'Email not available',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      )),
                   SizedBox(height: 16),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
@@ -170,6 +172,18 @@ class ProfileView extends BaseView<ProfileController> {
                       ),
                     ),
                   ),
+                  // Display user role
+                  Obx(() => Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                        child: Text(
+                          'Role: ${controller.userData.value?.role?.toUpperCase() ?? 'USER'}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      )),
                 ],
               ),
             ),
@@ -189,7 +203,7 @@ class ProfileView extends BaseView<ProfileController> {
                     child: CircleAvatar(
                       radius: 52,
                       backgroundImage: NetworkImage(
-                        'https://www.pngitem.com/pimgs/m/150-1503945_transparent-hd-user-png-free-download-png-download.png',
+                        'https://ui-avatars.com/api/?background=random&name=${controller.userData.value?.name ?? "User"}',
                       ),
                     ),
                   ),

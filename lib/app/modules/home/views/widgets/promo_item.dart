@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/widgets/no_image.dart';
 import 'package:exachanger_get_app/app/core/widgets/shimmer_widget.dart';
-import 'package:exachanger_get_app/app/data/model/promo_model.dart';
+import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:flutter/material.dart';
 
 class PromoItem extends StatelessWidget {

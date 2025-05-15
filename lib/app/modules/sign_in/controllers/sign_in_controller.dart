@@ -1,6 +1,6 @@
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
 import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
-import 'package:exachanger_get_app/app/data/model/signin_model.dart';
+import 'package:exachanger_get_app/app/data/models/signin_model.dart';
 import 'package:exachanger_get_app/app/data/repository/auth/auth_repository.dart';
 import 'package:get/get.dart';
 
@@ -12,18 +12,20 @@ class SignInController extends BaseController {
       Get.find(tag: (AuthRepository).toString());
 
   final Rx<SigninModel?> signinData = Rx<SigninModel?>(null);
+  final PreferenceManagerImpl preferenceManager =
+      Get.find<PreferenceManagerImpl>();
 
   void doSignIn(Map<String, dynamic> data) {
     var service = authRepository.getAuthData(data);
 
     callDataService(service, onSuccess: (data) {
-      // do something
+      // Store signIn data in the controller
       signinData.value = data;
 
-      PreferenceManagerImpl().setString("access_token", data.accessToken!);
-      PreferenceManagerImpl().setString("refresh_token", data.refreshToken!);
-      PreferenceManagerImpl().setBool("is_signed_in", true);
+      // Save all user data and tokens
+      preferenceManager.saveUserDataFromSignin(data);
 
+      // Set auth token for API calls
       DioProvider.setAuthToken(data.accessToken!);
 
       // go to main view

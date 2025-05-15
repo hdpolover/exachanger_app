@@ -10,7 +10,9 @@ abstract class AppEndpoints {
   static const String promo = 'promo';
   // blog
   static const String blog = 'blog';
-
   // transactions
   static const String transactions = 'transaction/get-by-user';
+
+  // products
+  static const String products = 'product';
 }

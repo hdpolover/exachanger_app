@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/utils/common_functions.dart';
-import 'package:exachanger_get_app/app/data/model/promo_model.dart';
+import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/values/text_styles.dart';

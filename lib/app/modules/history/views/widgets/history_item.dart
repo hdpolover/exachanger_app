@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
-import 'package:exachanger_get_app/app/data/model/transaction_model.dart';
+import 'package:exachanger_get_app/app/data/models/transaction_model.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/common_functions.dart';

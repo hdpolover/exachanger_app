@@ -3,9 +3,9 @@ import 'package:dio/dio.dart';
 import '../../../core/base/base_remote_source.dart';
 import '../../../core/values/app_endpoints.dart';
 import '../../../network/dio_provider.dart';
-import '../../model/api_response_model.dart';
-import '../../model/pagination_response_model.dart';
-import '../../model/transaction_model.dart';
+import '../../models/api_response_model.dart';
+import '../../models/pagination_response_model.dart';
+import '../../models/transaction_model.dart';
 import 'transaction_remote_data_source.dart';
 
 class TransactionRemoteDataSourceImpl extends BaseRemoteSource

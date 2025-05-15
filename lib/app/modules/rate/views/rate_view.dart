@@ -18,15 +18,47 @@ class RateView extends BaseView<RateController> {
 
   @override
   Widget body(BuildContext context) {
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: RateItem(),
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return Center(child: CircularProgressIndicator());
+      }
+
+      if (controller.error.value.isNotEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(controller.error.value),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: controller.refreshData,
+                child: Text('Retry'),
+              ),
+            ],
+          ),
         );
-      },
-    );
+      }
+
+      if (controller.products.isEmpty) {
+        return Center(
+          child: Text('No products available'),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: () => controller.fetchProducts(),
+        child: ListView.builder(
+          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          itemCount: controller.products.length,
+          itemBuilder: (context, index) {
+            final product = controller.products[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: RateItem(product: product),
+            );
+          },
+        ),
+      );
+    });
   }
 }
