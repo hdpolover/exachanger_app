@@ -9,7 +9,7 @@ class ProductModel {
   final String? name;
   final String? image;
   final String? category;
-  final int? status;
+  final String? status;
   final String? createdAt;
   final String? updatedAt;
   final PriceModel? price;

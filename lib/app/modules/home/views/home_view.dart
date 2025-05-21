@@ -2,6 +2,7 @@ import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/core/widgets/carousel_view.dart';
 import 'package:exachanger_get_app/app/data/models/blog_model.dart';
 import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
@@ -242,8 +243,13 @@ class HomeView extends BaseView<HomeController> {
 
                   return ProductItem(
                     product: controller.products[index],
-                    onTap: () => print(
-                        'Product ${controller.products[index].name} tapped'),
+                    onTap: () {
+                      // Navigate to exchange page and pass the product data
+                      Get.toNamed(
+                        Routes.EXCHANGE,
+                        arguments: controller.products[index],
+                      );
+                    },
                   );
                 },
               );
@@ -363,13 +369,14 @@ class HomeView extends BaseView<HomeController> {
           // carousel view
           SizedBox(
             height: Get.height * 0.2,
-            child: CarouselView(
+            child: CustomCarouselView(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
               itemSnapping: true,
               itemExtent: Get.width * 0.8,
+              spacing: 5, // Add spacing between items
               onTap: (index) {
                 print('Promo $index tapped');
 

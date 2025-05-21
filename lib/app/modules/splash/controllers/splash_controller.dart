@@ -145,7 +145,7 @@ class SplashController extends BaseController {
       );
 
       // Get blogs
-      statusText.value = "Loading blogs...";
+      statusText.value = "Loading news...";
       await callDataService(
         blogRepository.getAllBlogs(),
         onSuccess: (data) {

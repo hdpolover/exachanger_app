@@ -1,3 +1,4 @@
+import '../modules/exchange/views/proceed_exchange_view.dart';
 import 'package:get/get.dart';
 
 import '../middlewares/blog_middleware.dart';
@@ -101,6 +102,11 @@ class AppPages {
     GetPage(
       name: _Paths.EXCHANGE,
       page: () => ExchangeView(),
+      binding: ExchangeBinding(),
+    ),
+    GetPage(
+      name: _Paths.PROCEED_EXCHANGE,
+      page: () => ProceedExchangeView(),
       binding: ExchangeBinding(),
     ),
     GetPage(
