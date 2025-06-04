@@ -248,7 +248,7 @@ class TransactionDetailView extends BaseView<TransactionDetailController> {
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Exchange Rate',
@@ -261,7 +261,7 @@ class TransactionDetailView extends BaseView<TransactionDetailController> {
                     padding: EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: Colors.blue,
-                      shape: BoxShape.circle,
+                      shape: BoxShape.rectangle,
                     ),
                     child: Text(
                       _safeSubstring(from?.name, 0, 1, 'P'),
@@ -273,7 +273,7 @@ class TransactionDetailView extends BaseView<TransactionDetailController> {
                     padding: EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: Colors.teal,
-                      shape: BoxShape.circle,
+                      shape: BoxShape.rectangle,
                     ),
                     child: Text(
                       _safeSubstring(to?.product?.name, 0, 1, 'U'),

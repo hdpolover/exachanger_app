@@ -39,9 +39,15 @@ class RateView extends BaseView<RateController> {
         );
       }
 
-      if (controller.products.isEmpty) {
+      // Filter products to only show those with rates
+      final productsWithRates = controller.products
+          .where(
+              (product) => product.rates != null && product.rates!.isNotEmpty)
+          .toList();
+
+      if (productsWithRates.isEmpty) {
         return Center(
-          child: Text('No products available'),
+          child: Text('No products with rates available'),
         );
       }
 
@@ -49,9 +55,9 @@ class RateView extends BaseView<RateController> {
         onRefresh: () => controller.fetchProducts(),
         child: ListView.builder(
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          itemCount: controller.products.length,
+          itemCount: productsWithRates.length,
           itemBuilder: (context, index) {
-            final product = controller.products[index];
+            final product = productsWithRates[index];
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: RateItem(product: product),

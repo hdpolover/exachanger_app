@@ -15,9 +15,15 @@ import '../controllers/exchange_controller.dart';
 class ExchangeView extends BaseView<ExchangeController> {
   @override
   PreferredSizeWidget appBar(BuildContext context) {
+    // Get the state before building the widget
+    bool isFixedProduct = controller.isFixedSendProduct.value;
     return CustomAppBar(
-      appBarTitleText: 'Exchange',
-      isBackButtonEnabled: false,
+      appBarTitleText:
+          isFixedProduct && controller.selectedSendProduct.value != null
+              ? 'Exchange ${controller.selectedSendProduct.value!.name}'
+              : 'Exchange',
+      // Enable back button when coming from home view with a fixed product
+      isBackButtonEnabled: isFixedProduct,
     );
   }
 
@@ -94,13 +100,13 @@ class ExchangeView extends BaseView<ExchangeController> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(width: 5),
-          Text(
-            "(${CommonFunctions.formatUSD(rate.pricing is int ? (rate.pricing as int).toDouble() : (rate.pricing ?? 0.0))})",
-            style: extraSmallBodyTextStyle.copyWith(
-              color: Colors.grey,
-            ),
-          ),
+          // SizedBox(width: 5),
+          // Text(
+          //   "(${CommonFunctions.formatUSD(rate.pricing is int ? (rate.pricing as int).toDouble() : (rate.pricing ?? 0.0))})",
+          //   style: extraSmallBodyTextStyle.copyWith(
+          //     color: Colors.grey,
+          //   ),
+          // ),
         ],
       ),
     );
@@ -119,7 +125,7 @@ class ExchangeView extends BaseView<ExchangeController> {
         ),
         SizedBox(height: 10),
         Obx(() {
-          // Handle loading and empty states
+          // Handle loading state
           if (controller.isLoading.value) {
             return Container(
               height: 50,
@@ -131,6 +137,64 @@ class ExchangeView extends BaseView<ExchangeController> {
             );
           }
 
+          // Handle fixed product mode (when coming from home page)
+          if (controller.isFixedSendProduct.value &&
+              controller.selectedSendProduct.value != null) {
+            final product = controller.selectedSendProduct.value!;
+            return Container(
+              height: 50,
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(color: Colors.grey.shade300),
+                color:
+                    Colors.grey.shade50, // Light gray to indicate non-editable
+              ),
+              child: Row(
+                children: [
+                  product.image != null
+                      ? CachedNetworkImage(
+                          imageUrl: product.image!,
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 30,
+                            height: 30,
+                            color: Colors.grey[200],
+                          ),
+                          errorWidget: (context, url, error) => Image.asset(
+                            AppImages.noImage,
+                            width: 30,
+                            height: 30,
+                          ),
+                        )
+                      : Image.asset(
+                          AppImages.logo,
+                          width: 30,
+                          height: 30,
+                        ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      product.name ?? 'Unknown',
+                      style: extraSmallBodyTextStyle.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  // Add an indicator to show this selection is fixed
+                  Icon(
+                    Icons.lock_outline,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Handle empty products case
           if (controller.productsWithRates.value.isEmpty) {
             return Container(
               height: 50,
@@ -149,7 +213,7 @@ class ExchangeView extends BaseView<ExchangeController> {
             );
           }
 
-          // Show dropdown with products
+          // Show dropdown with products (standard mode)
           return Container(
             padding: EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
@@ -264,6 +328,11 @@ class ExchangeView extends BaseView<ExchangeController> {
 
   @override
   Widget body(BuildContext context) {
+    print(
+        "Building Exchange view body - fixed product mode: ${controller.isFixedSendProduct.value}");
+    print(
+        "Selected send product: ${controller.selectedSendProduct.value?.name}");
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Container(
@@ -286,12 +355,24 @@ class ExchangeView extends BaseView<ExchangeController> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Exchange Here!',
-              style: regularBodyTextStyle.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Obx(() {
+              if (controller.isFixedSendProduct.value &&
+                  controller.selectedSendProduct.value != null) {
+                return Text(
+                  'Exchange ${controller.selectedSendProduct.value!.name}',
+                  style: regularBodyTextStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              } else {
+                return Text(
+                  'Exchange Here!',
+                  style: regularBodyTextStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }
+            }),
             SizedBox(height: 20),
             _sendDropdown(),
             SizedBox(height: 10),

@@ -1,12 +1,10 @@
 import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/widgets/custom_app_bar.dart';
-import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-
 import '../controllers/promo_controller.dart';
 import 'promo_full_item.dart';
+import 'promo_detail_view.dart';
 
 class PromoView extends BaseView<PromoController> {
   @override
@@ -25,10 +23,8 @@ class PromoView extends BaseView<PromoController> {
           child: PromoFullItem(
             promo: controller.promos[index],
             onTap: () {
-              Get.toNamed(
-                Routes.PROMO_DETAIL,
-                arguments: controller.promos[index],
-              );
+              controller.selectPromo(controller.promos[index]);
+              Get.to(() => PromoDetailView());
             },
           ),
         );

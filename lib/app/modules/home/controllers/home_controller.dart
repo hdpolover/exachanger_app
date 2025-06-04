@@ -132,8 +132,9 @@ class HomeController extends BaseController {
           blogList.value = List<BlogModel>.from(dataService.blogList.value);
           transactionList.value =
               List<TransactionModel>.from(dataService.transactionList.value);
-          productList.value =
-              List<ProductModel>.from(dataService.productList.value);
+          productList.value = List<ProductModel>.from(
+              dataService.productList.value.where((product) =>
+                  product.status == "active")); // Filter active products
           print("All data loaded from DataService");
           return;
         }
@@ -169,8 +170,10 @@ class HomeController extends BaseController {
         }
 
         if (splashController.productList.value.isNotEmpty) {
-          productList.value =
-              List<ProductModel>.from(splashController.productList.value);
+          // Filter only active products (status == "active") to match DataService behavior
+          productList.value = List<ProductModel>.from(splashController
+              .productList.value
+              .where((p) => p.status == "active"));
           print(
               "Products loaded from splash controller: ${productList.value.length}");
         }
@@ -220,7 +223,9 @@ class HomeController extends BaseController {
           }
 
           if (cachedProducts.value.isNotEmpty) {
-            productList.value = List<ProductModel>.from(cachedProducts.value);
+            // Filter only active products (status == "active")
+            productList.value = List<ProductModel>.from(
+                cachedProducts.value.where((p) => p.status == "active"));
             print(
                 "Products loaded from cached data: ${productList.value.length}");
           }
@@ -292,8 +297,9 @@ class HomeController extends BaseController {
     // Fetch products
     var productService = productRepository.getAllProducts();
     callDataService(productService, onSuccess: (data) {
-      productList.value = data;
-      print("Products fetched in HomeController: ${data.length}");
+      // Filter only active products (status == "active") to match DataService behavior
+      productList.value = data.where((p) => p.status == "active").toList();
+      print("Products fetched in HomeController: ${productList.value.length}");
       isLoading.value = false;
 
       // Update DataService with newly fetched data
@@ -311,6 +317,17 @@ class HomeController extends BaseController {
 
   // Refresh data from API (for pull-to-refresh functionality)
   Future<void> refreshData() async {
+    // Store current data as backup in case of API failures
+    List<ProductModel> currentProducts =
+        List<ProductModel>.from(productList.value);
+    List<PromoModel> currentPromos = List<PromoModel>.from(promoList.value);
+    List<BlogModel> currentBlogs = List<BlogModel>.from(blogList.value);
+    List<TransactionModel> currentTransactions =
+        List<TransactionModel>.from(transactionList.value);
+
+    print(
+        "DEBUG - Before refresh: Current active products count: ${currentProducts.length}");
+
     try {
       isLoading.value = true;
       error.value = "";
@@ -319,14 +336,44 @@ class HomeController extends BaseController {
       if (_dataService != null) {
         // Use DataService to refresh all data at once
         await dataService.refreshAllData();
-
         // Update our local lists from the refreshed data in DataService
-        promoList.value = List<PromoModel>.from(dataService.promoList.value);
-        blogList.value = List<BlogModel>.from(dataService.blogList.value);
-        transactionList.value =
-            List<TransactionModel>.from(dataService.transactionList.value);
-        productList.value =
-            List<ProductModel>.from(dataService.productList.value);
+        if (dataService.promoList.value.isNotEmpty) {
+          promoList.value = List<PromoModel>.from(dataService.promoList.value);
+        }
+        if (dataService.blogList.value.isNotEmpty) {
+          blogList.value = List<BlogModel>.from(dataService.blogList.value);
+        }
+        if (dataService.transactionList.value.isNotEmpty) {
+          transactionList.value =
+              List<TransactionModel>.from(dataService.transactionList.value);
+        }
+        // Make sure we're only getting active products (status == "active") if we have any products
+        if (dataService.productList.value.isNotEmpty) {
+          // Filter the products to only get active ones
+          List<ProductModel> activeProducts = dataService.productList.value
+              .where((p) => p.status == "active")
+              .toList();
+
+          if (activeProducts.isNotEmpty) {
+            productList.value = activeProducts;
+            print(
+                "DEBUG - After refresh: Active products count=${activeProducts.length}");
+          } else {
+            // No active products found, keep existing
+            print(
+                "DEBUG - No active products found after refresh, keeping existing (${currentProducts.length})");
+            if (currentProducts.isNotEmpty) {
+              productList.value = currentProducts;
+            }
+          }
+        } else {
+          // No products at all, keep existing
+          print(
+              "DEBUG - No products found in DataService after refresh, keeping existing (${currentProducts.length})");
+          if (currentProducts.isNotEmpty) {
+            productList.value = currentProducts;
+          }
+        }
 
         isLoading.value = false;
         print("All data refreshed through DataService");
@@ -387,13 +434,46 @@ class HomeController extends BaseController {
       await callDataService(
         productRepository.getAllProducts(),
         onSuccess: (data) {
-          productList.value = data;
-          // Update the DataService with new products
-          dataService.setData(products: data);
+          print(
+              "DEBUG - Fallback refresh: Raw products fetched: ${data.length}");
+
+          if (data.isNotEmpty) {
+            // Filter only active products (status == "active") to match DataService behavior
+            List<ProductModel> activeProducts =
+                data.where((p) => p.status == "active").toList();
+            print(
+                "DEBUG - Fallback refresh: Active products filtered: ${activeProducts.length}");
+            if (activeProducts.isNotEmpty) {
+              productList.value = activeProducts;
+              // Update the DataService with new products
+              dataService.setData(products: activeProducts);
+            } else {
+              print(
+                  "DEBUG - Fallback refresh: No active products found, keeping existing products");
+              // Maintain existing products if available
+              if (currentProducts.isNotEmpty) {
+                print(
+                    "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products");
+                // Keep the current products
+                // Don't update DataService with currentProducts to avoid confusion
+              }
+            }
+          } else {
+            print(
+                "DEBUG - Fallback refresh: No products returned from API, keeping existing products");
+            // Maintain existing products if available
+            if (currentProducts.isNotEmpty) {
+              print(
+                  "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products");
+              // Keep the current products
+              // Don't update DataService with currentProducts to avoid confusion
+            }
+          }
         },
         onError: (error) {
           showErrorMessage(error.toString());
           this.error.value = error.toString();
+          print("DEBUG - Fallback refresh: Error fetching products: $error");
         },
       );
     } finally {
@@ -411,7 +491,13 @@ class HomeController extends BaseController {
   @override
   void onInit() {
     super.onInit();
+    isLoading.value = true; // Start with loading state to show shimmer effects
     getData();
-    loadUserData();
+    loadUserData().then((_) {
+      // Small delay to ensure shimmer is visible even on fast loads
+      Future.delayed(Duration(milliseconds: 300), () {
+        isLoading.value = false;
+      });
+    });
   }
 }

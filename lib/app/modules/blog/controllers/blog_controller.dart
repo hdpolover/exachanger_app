@@ -3,11 +3,17 @@ import 'package:exachanger_get_app/app/data/models/blog_model.dart';
 import 'package:get/get.dart';
 
 class BlogController extends BaseController {
-  List<BlogModel> blogs = Get.arguments;
+  List<BlogModel> blogs = [];
+  late BlogModel blogModel;
 
   @override
   void onInit() {
     super.onInit();
+    if (Get.arguments is List<BlogModel>) {
+      blogs = Get.arguments;
+    } else if (Get.arguments is BlogModel) {
+      blogModel = Get.arguments;
+    }
   }
 
   @override

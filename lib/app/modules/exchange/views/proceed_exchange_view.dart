@@ -3,6 +3,7 @@ import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:exachanger_get_app/app/core/widgets/custom_app_bar.dart';
 import 'package:exachanger_get_app/app/core/widgets/custom_button.dart';
 import 'package:exachanger_get_app/app/modules/exchange/controllers/exchange_controller.dart';
+import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -329,13 +330,24 @@ class ProceedExchangeView extends BaseView<ExchangeController> {
           //   );
           // }),
           SizedBox(height: 16),
-          CustomButton(
-              label: 'Continue',
-              onPressed: () {
-                // Handle continue button press
-                // You can navigate to the next screen or perform any action here
-                Get.toNamed('/exchange/confirm');
-              }),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: CustomButton(
+                label: 'Continue',
+                onPressed: () {
+                  // Calculate final amounts
+                  double sendAmount = inputAmount.value;
+                  double receiveAmount = calculatedAmount
+                      .value; // Navigate to confirm exchange page with all necessary data
+                  Get.toNamed(Routes.CONFIRM_EXCHANGE, arguments: {
+                    'sendProduct': sendProduct,
+                    'receiveRate': receiveRate,
+                    'sendAmount': sendAmount,
+                    'receiveAmount': receiveAmount,
+                    'fee': FEE
+                  });
+                }),
+          ),
         ],
       ),
     );

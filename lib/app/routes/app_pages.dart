@@ -1,4 +1,5 @@
 import '../modules/exchange/views/proceed_exchange_view.dart';
+import '../modules/exchange/views/confirm_exchange_view.dart';
 import 'package:get/get.dart';
 
 import '../middlewares/blog_middleware.dart';
@@ -15,11 +16,10 @@ import '../modules/home/views/home_view.dart';
 import '../modules/main/bindings/main_binding.dart';
 import '../modules/main/views/main_view.dart';
 import '../modules/profile/bindings/profile_binding.dart';
-import '../modules/profile/views/profile_view.dart';
+import '../modules/profile/views/pages/profile_view.dart';
 import '../modules/promo/bindings/promo_binding.dart';
 import '../modules/promo/views/promo_view.dart';
-import '../modules/promo_detail/bindings/promo_detail_binding.dart';
-import '../modules/promo_detail/views/promo_detail_view.dart';
+
 import '../modules/rate/bindings/rate_binding.dart';
 import '../modules/rate/views/rate_view.dart';
 import '../modules/sign_in/bindings/sign_in_binding.dart';
@@ -115,14 +115,14 @@ class AppPages {
       binding: TransactionDetailBinding(),
     ),
     GetPage(
-      name: _Paths.PROMO_DETAIL,
-      page: () => PromoDetailView(),
-      binding: PromoDetailBinding(),
-    ),
-    GetPage(
       name: _Paths.PROMO,
       page: () => PromoView(),
       binding: PromoBinding(),
+    ),
+    GetPage(
+      name: _Paths.CONFIRM_EXCHANGE,
+      page: () => ConfirmExchangeView(),
+      binding: ExchangeBinding(),
     ),
   ];
 }

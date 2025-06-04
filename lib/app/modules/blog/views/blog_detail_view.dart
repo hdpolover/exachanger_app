@@ -3,12 +3,11 @@ import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:exachanger_get_app/app/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 
-import '../controllers/blog_detail_controller.dart';
+import '../controllers/blog_controller.dart';
 
-class BlogDetailView extends BaseView<BlogDetailController> {
+class BlogDetailView extends BaseView<BlogController> {
   @override
   PreferredSizeWidget appBar(BuildContext context) {
     return CustomAppBar(appBarTitleText: controller.blogModel.title!);

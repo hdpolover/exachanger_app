@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
@@ -8,62 +9,161 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../../routes/app_pages.dart';
-import '../controllers/profile_controller.dart';
+import '../../../../routes/app_pages.dart';
+import '../../controllers/profile_controller.dart';
 
 class ProfileView extends BaseView<ProfileController> {
   @override
   PreferredSizeWidget? appBar(BuildContext context) => null;
 
-  final List<SettingItem> items = [
-    SettingItem(
-      icon: Icons.person,
-      title: 'Profile Information',
-      subtitle: 'Manage account details',
-      onTap: () => () {
-        // Handle navigation
+  // logout button
+  Widget _logOutButton() {
+    return GestureDetector(
+      onTap: () {
+        showModal(
+          context: Get.context!,
+          configuration: FadeScaleTransitionConfiguration(),
+          builder: (BuildContext context) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.logout_rounded,
+                      color: Colors.red,
+                      size: 60,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Are you sure you want to logout?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 24),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+
+                            // Clear user data and navigate to login page
+                            PreferenceManagerImpl().logout();
+                            Get.offAllNamed(Routes.WELCOME);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.colorPrimary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text('Logout'),
+                        ),
+                        SizedBox(width: 16),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade200,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text('Cancel'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
       },
-    ),
-    // referral code
-    SettingItem(
-      icon: Icons.person,
-      title: 'Referral Code',
-      subtitle: 'Invite your friends and earn rewards',
-      onTap: () => () {
-        // Handle navigation
-      },
-    ),
-    // about exchanger
-    SettingItem(
-      icon: Icons.info,
-      title: 'About Exchanger',
-      subtitle: 'Get to know more about Exchanger',
-      onTap: () => () {
-        // Handle navigation
-      },
-    ),
-    // faq
-    SettingItem(
-      icon: Icons.help,
-      title: 'FAQs',
-      subtitle: 'Frequently asked questions',
-      onTap: () => () {
-        // Handle navigation
-      },
-    ),
-    // log out
-    SettingItem(
-      icon: Icons.logout,
-      title: 'Logout',
-      subtitle: 'Sign out of your account',
-      onTap: () => () {
-        // Handle logout
-        Get.find<PreferenceManagerImpl>().logout();
-        Get.offAllNamed(Routes.WELCOME);
-      },
-      isSignOutBtn: true,
-    ),
-  ];
+      child: Container(
+        width: double.infinity,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(
+            color: Colors.red,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
+          child: Text(
+            'Logout',
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> get _getItems => [
+        SettingItem(
+          icon: Icons.person,
+          title: 'Profile Information',
+          subtitle: 'Manage account details',
+          onTap: () => () {
+            // Handle navigation
+          },
+        ),
+        // referral code
+        SettingItem(
+          icon: Icons.person,
+          title: 'Referral Code',
+          subtitle: 'Invite your friends and earn rewards',
+          onTap: () => () {
+            // Handle navigation
+          },
+        ),
+        // about exchanger
+        SettingItem(
+          icon: Icons.info,
+          title: 'About Exchanger',
+          subtitle: 'Get to know more about Exchanger',
+          onTap: () => () {
+            // Handle navigation
+          },
+        ),
+        // faq
+        SettingItem(
+          icon: Icons.help,
+          title: 'FAQs',
+          subtitle: 'Frequently asked questions',
+          onTap: () => () {
+            // Handle navigation
+          },
+        ),
+        // log out
+        _logOutButton(),
+      ];
 
   _buildBottomListSection() {
     String year = DateTime.now().year.toString();
@@ -249,7 +349,7 @@ class ProfileView extends BaseView<ProfileController> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Settings items
-                    ...items.map((item) => Padding(
+                    ..._getItems.map((item) => Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: item,
                         )),

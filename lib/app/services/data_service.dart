@@ -81,24 +81,72 @@ class DataService extends GetxService {
   /// Load/refresh all data from API
   Future<void> refreshAllData() async {
     try {
-      // Create a batch of futures to run in parallel
-      final futures = await Future.wait([
-        promoRepository.getAllPromos(),
-        blogRepository.getAllBlogs(),
-        transactionRepository.getAllTransactions(),
-        productRepository.getAllProducts()
-      ]); // Extract results
-      final promos = futures[0] as List<PromoModel>;
-      final blogs = futures[1] as List<BlogModel>;
-      final transactions = futures[2] as List<TransactionModel>;
-      final products = futures[3] as List<ProductModel>;
+      print('DEBUG - Starting refreshAllData in DataService');
+
+      // Create individual futures and use try-catch for each one to make it more robust
+      List<PromoModel> promos = [];
+      List<BlogModel> blogs = [];
+      List<TransactionModel> transactions = [];
+      List<ProductModel> products = [];
+
+      try {
+        promos = await promoRepository.getAllPromos();
+        print('DEBUG - Promos fetched: ${promos.length}');
+      } catch (e) {
+        print('ERROR fetching promos: $e');
+      }
+
+      try {
+        blogs = await blogRepository.getAllBlogs();
+        print('DEBUG - Blogs fetched: ${blogs.length}');
+      } catch (e) {
+        print('ERROR fetching blogs: $e');
+      }
+
+      try {
+        transactions = await transactionRepository.getAllTransactions();
+        print('DEBUG - Transactions fetched: ${transactions.length}');
+      } catch (e) {
+        print('ERROR fetching transactions: $e');
+      }
+
+      try {
+        products = await productRepository.getAllProducts();
+        print('DEBUG - Products fetched: ${products.length}');
+      } catch (e) {
+        print('ERROR fetching products: $e');
+      }
 
       // Update observable lists
       promoList.value = promos;
       blogList.value = blogs;
-      transactionList.value = transactions;
-      // Filter only active products (status == 1)
-      productList.value = products.where((p) => p.status == 1).toList();
+      transactionList.value =
+          transactions; // Print raw products data for debugging
+      print(
+          'DEBUG - DataService.refreshAllData: Raw products from API: ${products.length}');
+      if (products.isNotEmpty) {
+        print(
+            'DEBUG - DataService.refreshAllData: Raw product statuses: ${products.map((p) => p.status).toList()}');
+
+        // Filter only active products (status == 1)
+        List<ProductModel> activeProducts =
+            products.where((p) => p.status == 1).toList();
+
+        // Only update if we actually got active products, otherwise keep existing
+        if (activeProducts.isNotEmpty) {
+          productList.value = activeProducts;
+        } else {
+          print(
+              'DEBUG - DataService.refreshAllData: No active products found, keeping existing products');
+        }
+
+        // Log filtered products count
+        print(
+            'DEBUG - DataService.refreshAllData: Active products after filter: ${productList.value.length}');
+      } else {
+        print(
+            'DEBUG - DataService.refreshAllData: No products fetched from API, keeping existing products');
+      }
 
       // Set loaded flag
       dataLoaded.value = true;

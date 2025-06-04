@@ -16,9 +16,9 @@ abstract class Routes {
   static const RATE = _Paths.RATE;
   static const EXCHANGE = _Paths.EXCHANGE;
   static const TRANSACTION_DETAIL = _Paths.TRANSACTION_DETAIL;
-  static const PROMO_DETAIL = _Paths.PROMO_DETAIL;
   static const PROMO = _Paths.PROMO;
   static const PROCEED_EXCHANGE = _Paths.PROCEED_EXCHANGE;
+  static const CONFIRM_EXCHANGE = _Paths.CONFIRM_EXCHANGE;
 }
 
 abstract class _Paths {
@@ -36,7 +36,7 @@ abstract class _Paths {
   static const RATE = '/rate';
   static const EXCHANGE = '/exchange';
   static const TRANSACTION_DETAIL = '/transaction-detail';
-  static const PROMO_DETAIL = '/promo-detail';
   static const PROMO = '/promo';
   static const PROCEED_EXCHANGE = '/proceed-exchange';
+  static const CONFIRM_EXCHANGE = '/exchange/confirm';
 }
