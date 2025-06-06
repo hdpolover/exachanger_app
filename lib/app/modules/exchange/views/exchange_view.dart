@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/base/base_view.dart';
-import 'package:exachanger_get_app/app/core/utils/common_functions.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:exachanger_get_app/app/core/widgets/custom_app_bar.dart';
@@ -13,18 +12,22 @@ import 'package:get/get.dart';
 import '../controllers/exchange_controller.dart';
 
 class ExchangeView extends BaseView<ExchangeController> {
+  // Override the controller getter to ensure proper initialization
+  @override
+  ExchangeController get controller {
+    try {
+      return Get.find<ExchangeController>();
+    } catch (e) {
+      // If controller is not found, ensure it's properly initialized
+      print("DEBUG: ExchangeController not found, initializing...");
+      Get.lazyPut<ExchangeController>(() => ExchangeController(), fenix: true);
+      return Get.find<ExchangeController>();
+    }
+  }
+
   @override
   PreferredSizeWidget appBar(BuildContext context) {
-    // Get the state before building the widget
-    bool isFixedProduct = controller.isFixedSendProduct.value;
-    return CustomAppBar(
-      appBarTitleText:
-          isFixedProduct && controller.selectedSendProduct.value != null
-              ? 'Exchange ${controller.selectedSendProduct.value!.name}'
-              : 'Exchange',
-      // Enable back button when coming from home view with a fixed product
-      isBackButtonEnabled: isFixedProduct,
-    );
+    return _ReactiveAppBar(controller: controller);
   }
 
   DropdownMenuItem<ProductModel> _productDropdownItem(ProductModel product) {
@@ -38,22 +41,12 @@ class ExchangeView extends BaseView<ExchangeController> {
                   width: 30,
                   height: 30,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    width: 30,
-                    height: 30,
-                    color: Colors.grey[200],
-                  ),
-                  errorWidget: (context, url, error) => Image.asset(
-                    AppImages.noImage,
-                    width: 30,
-                    height: 30,
-                  ),
+                  placeholder: (context, url) =>
+                      Container(width: 30, height: 30, color: Colors.grey[200]),
+                  errorWidget: (context, url, error) =>
+                      Image.asset(AppImages.noImage, width: 30, height: 30),
                 )
-              : Image.asset(
-                  AppImages.logo,
-                  width: 30,
-                  height: 30,
-                ),
+              : Image.asset(AppImages.logo, width: 30, height: 30),
           SizedBox(width: 10),
           Text(
             product.name ?? 'Unknown',
@@ -77,22 +70,12 @@ class ExchangeView extends BaseView<ExchangeController> {
                   width: 30,
                   height: 30,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    width: 30,
-                    height: 30,
-                    color: Colors.grey[200],
-                  ),
-                  errorWidget: (context, url, error) => Image.asset(
-                    AppImages.noImage,
-                    width: 30,
-                    height: 30,
-                  ),
+                  placeholder: (context, url) =>
+                      Container(width: 30, height: 30, color: Colors.grey[200]),
+                  errorWidget: (context, url, error) =>
+                      Image.asset(AppImages.noImage, width: 30, height: 30),
                 )
-              : Image.asset(
-                  AppImages.logo,
-                  width: 30,
-                  height: 30,
-                ),
+              : Image.asset(AppImages.logo, width: 30, height: 30),
           SizedBox(width: 10),
           Text(
             rate.product?.name ?? 'Unknown',
@@ -119,9 +102,7 @@ class ExchangeView extends BaseView<ExchangeController> {
       children: [
         Text(
           'Send',
-          style: smallBodyTextStyle.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: smallBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
         Obx(() {
@@ -169,11 +150,7 @@ class ExchangeView extends BaseView<ExchangeController> {
                             height: 30,
                           ),
                         )
-                      : Image.asset(
-                          AppImages.logo,
-                          width: 30,
-                          height: 30,
-                        ),
+                      : Image.asset(AppImages.logo, width: 30, height: 30),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -184,11 +161,7 @@ class ExchangeView extends BaseView<ExchangeController> {
                     ),
                   ),
                   // Add an indicator to show this selection is fixed
-                  Icon(
-                    Icons.lock_outline,
-                    size: 16,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.lock_outline, size: 16, color: Colors.grey),
                 ],
               ),
             );
@@ -251,9 +224,7 @@ class ExchangeView extends BaseView<ExchangeController> {
       children: [
         Text(
           'Receive',
-          style: smallBodyTextStyle.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: smallBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
         Obx(() {
@@ -328,10 +299,8 @@ class ExchangeView extends BaseView<ExchangeController> {
 
   @override
   Widget body(BuildContext context) {
-    print(
-        "Building Exchange view body - fixed product mode: ${controller.isFixedSendProduct.value}");
-    print(
-        "Selected send product: ${controller.selectedSendProduct.value?.name}");
+    // Ensure controller handles new navigation arguments when view rebuilds
+    controller.resetAndHandleNewNavigation();
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -376,27 +345,26 @@ class ExchangeView extends BaseView<ExchangeController> {
             SizedBox(height: 20),
             _sendDropdown(),
             SizedBox(height: 10),
-            Center(
-              child: Icon(
-                Icons.swap_horiz,
-                size: 30,
-              ),
-            ),
+            Center(child: Icon(Icons.swap_horiz, size: 30)),
             SizedBox(height: 10),
             _receiveDropdown(),
             SizedBox(height: 20),
             Obx(() {
-              bool canExchange = controller.selectedSendProduct.value != null &&
+              bool canExchange =
+                  controller.selectedSendProduct.value != null &&
                   controller.selectedReceiveRate.value != null;
               return CustomButton(
                 label: "Exchange",
                 onPressed: canExchange
                     ? () {
                         // Navigate to proceed exchange screen, passing selected product and rate as arguments
-                        Get.toNamed('/proceed-exchange', arguments: {
-                          'sendProduct': controller.selectedSendProduct.value,
-                          'receiveRate': controller.selectedReceiveRate.value,
-                        });
+                        Get.toNamed(
+                          '/proceed-exchange',
+                          arguments: {
+                            'sendProduct': controller.selectedSendProduct.value,
+                            'receiveRate': controller.selectedReceiveRate.value,
+                          },
+                        );
                       }
                     : () {},
                 isSmallBtn: true,
@@ -406,5 +374,29 @@ class ExchangeView extends BaseView<ExchangeController> {
         ),
       ),
     );
+  }
+}
+
+class _ReactiveAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final ExchangeController controller;
+
+  const _ReactiveAppBar({required this.controller});
+
+  @override
+  Size get preferredSize => AppBar().preferredSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      bool isFixedProduct = controller.isFixedSendProduct.value;
+      return CustomAppBar(
+        appBarTitleText:
+            isFixedProduct && controller.selectedSendProduct.value != null
+            ? 'Exchange ${controller.selectedSendProduct.value!.name}'
+            : 'Exchange',
+        // Enable back button when coming from home view with a fixed product
+        isBackButtonEnabled: isFixedProduct,
+      );
+    });
   }
 }

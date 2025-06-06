@@ -23,13 +23,12 @@ class RateModel {
     this.currency,
     this.product,
   });
-
   factory RateModel.fromJson(Map<String, dynamic> json) {
     return RateModel(
       id: json['id'],
-      pricingType: json['pricing_type'],
+      pricingType: _parseIntFromDynamic(json['pricing_type']),
       pricing: json['pricing'],
-      feeType: json['fee_type'],
+      feeType: _parseIntFromDynamic(json['fee_type']),
       fee: json['fee'],
       minimumAmount: json['minimum_amount'],
       status: json['status'],
@@ -38,6 +37,21 @@ class RateModel {
           ? ProductModel.fromJson(json['product'])
           : null,
     );
+  }
+
+  static int? _parseIntFromDynamic(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        print("ERROR: Could not parse '$value' as int");
+        return null;
+      }
+    }
+    print("ERROR: Unexpected type ${value.runtimeType} for int field: $value");
+    return null;
   }
 
   Map<String, dynamic> toJson() {

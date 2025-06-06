@@ -30,17 +30,27 @@ class PaginationResponseModel<T> {
   final List<T>? data;
   final MetaModel? meta;
 
-  PaginationResponseModel({
-    this.data,
-    this.meta,
-  });
-
+  PaginationResponseModel({this.data, this.meta});
   factory PaginationResponseModel.fromJson(
-      Map<String, dynamic> json, T Function(dynamic) fromJsonT) {
+    Map<String, dynamic> json,
+    T Function(dynamic) fromJsonT,
+  ) {
+    // Handle different data structures
+    List<T>? dataList;
+    if (json['data'] != null) {
+      var data = json['data'];
+      if (data is List) {
+        dataList = data.map((e) => fromJsonT(e)).toList();
+      } else {
+        print(
+          "ERROR: Expected List for paginated data but got ${data.runtimeType}: $data",
+        );
+        dataList = null;
+      }
+    }
+
     return PaginationResponseModel<T>(
-      data: json['data'] != null
-          ? (json['data'] as List).map((e) => fromJsonT(e)).toList()
-          : null,
+      data: dataList,
       meta: json['meta'] != null ? MetaModel.fromJson(json['meta']) : null,
     );
   }
@@ -52,9 +62,7 @@ class PaginationResponseModel<T> {
 class MetaModel {
   final PaginationModel? pagination;
 
-  MetaModel({
-    this.pagination,
-  });
+  MetaModel({this.pagination});
 
   factory MetaModel.fromJson(Map<String, dynamic> json) {
     return MetaModel(
@@ -88,18 +96,32 @@ class PaginationModel {
     this.limit,
     this.total,
   });
-
   factory PaginationModel.fromJson(Map<String, dynamic> json) {
     return PaginationModel(
-      currentPage: json['current_page'],
-      lastPage: json['last_page'],
-      from: json['from'],
-      to: json['to'],
-      page: json['page'],
-      offset: json['offset'],
-      limit: json['limit'],
-      total: json['total'],
+      currentPage: _parseIntFromDynamic(json['current_page']),
+      lastPage: _parseIntFromDynamic(json['last_page']),
+      from: _parseIntFromDynamic(json['from']),
+      to: _parseIntFromDynamic(json['to']),
+      page: _parseIntFromDynamic(json['page']),
+      offset: _parseIntFromDynamic(json['offset']),
+      limit: _parseIntFromDynamic(json['limit']),
+      total: _parseIntFromDynamic(json['total']),
     );
+  }
+
+  static int? _parseIntFromDynamic(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        print("ERROR: Could not parse '$value' as int");
+        return null;
+      }
+    }
+    print("ERROR: Unexpected type ${value.runtimeType} for int field: $value");
+    return null;
   }
 
   @override

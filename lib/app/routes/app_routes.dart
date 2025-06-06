@@ -19,6 +19,8 @@ abstract class Routes {
   static const PROMO = _Paths.PROMO;
   static const PROCEED_EXCHANGE = _Paths.PROCEED_EXCHANGE;
   static const CONFIRM_EXCHANGE = _Paths.CONFIRM_EXCHANGE;
+  static const HOME_MORE = _Paths.HOME_MORE;
+  static const NOTIFICATION = _Paths.NOTIFICATION;
 }
 
 abstract class _Paths {
@@ -39,4 +41,6 @@ abstract class _Paths {
   static const PROMO = '/promo';
   static const PROCEED_EXCHANGE = '/proceed-exchange';
   static const CONFIRM_EXCHANGE = '/exchange/confirm';
+  static const HOME_MORE = '/home-more';
+  static const NOTIFICATION = '/notification';
 }

@@ -2,6 +2,7 @@
 import 'price_model.dart';
 import 'rate_model.dart';
 import 'transfer_data_model.dart';
+import 'blockchain_model.dart';
 
 class ProductModel {
   final String? id;
@@ -14,6 +15,7 @@ class ProductModel {
   final String? updatedAt;
   final PriceModel? price;
   final List<RateModel>? rates;
+  final List<BlockchainModel>? blockchains;
   final TransferDataModel? transferData;
 
   ProductModel({
@@ -27,6 +29,7 @@ class ProductModel {
     this.updatedAt,
     this.price,
     this.rates,
+    this.blockchains,
     this.transferData,
   });
 
@@ -43,6 +46,11 @@ class ProductModel {
       price: json['price'] != null ? PriceModel.fromJson(json['price']) : null,
       rates: json['rates'] != null
           ? (json['rates'] as List).map((i) => RateModel.fromJson(i)).toList()
+          : null,
+      blockchains: json['blockchains'] != null
+          ? (json['blockchains'] as List)
+                .map((i) => BlockchainModel.fromJson(i))
+                .toList()
           : null,
       transferData: json['transfer_data'] != null
           ? TransferDataModel.fromJson(json['transfer_data'])
@@ -65,6 +73,9 @@ class ProductModel {
     }
     if (this.rates != null) {
       data['rates'] = this.rates!.map((v) => v.toJson()).toList();
+    }
+    if (this.blockchains != null) {
+      data['blockchains'] = this.blockchains!.map((v) => v.toJson()).toList();
     }
     if (this.transferData != null) {
       data['transfer_data'] = this.transferData!.toJson();

@@ -11,6 +11,7 @@ import 'package:exachanger_get_app/app/modules/promo/bindings/promo_binding.dart
 import 'package:exachanger_get_app/app/modules/promo/views/promo_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'package:get/get.dart';
 
@@ -27,10 +28,7 @@ class HomeView extends BaseView<HomeController> {
       surfaceTintColor: AppColors.colorWhite,
       backgroundColor: AppColors.colorWhite,
       automaticallyImplyLeading: false,
-      title: Image.asset(
-        AppImages.logoText,
-        height: 25,
-      ),
+      title: Image.asset(AppImages.logoText, height: 25),
       centerTitle: true,
     );
   }
@@ -334,27 +332,29 @@ class HomeView extends BaseView<HomeController> {
   @override
   Widget body(BuildContext context) {
     return Obx(
-      () => GestureDetector(
-        onVerticalDragEnd: (details) {
-          // Positive velocity means dragging downward
-          if (details.primaryVelocity! > 0 && details.primaryVelocity! > 300) {
-            controller.refreshData();
-          }
-        },
-        child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              _topSection(),
-              _exchangeSection(),
-              // Show the transaction section when loading or if there are transactions
-              if (controller.isLoading.value ||
-                  controller.transactions.isNotEmpty)
-                _transactionSection(),
-              _whatsnewSection(),
-              _newsSection(),
-            ],
-          ),
+      () => SmartRefresher(
+        key: const ValueKey('home_smart_refresher'),
+        controller: controller.refreshController,
+        onRefresh: controller.onRefresh,
+        enablePullDown: true,
+        enablePullUp: false,
+        physics: const BouncingScrollPhysics(),
+        header: WaterDropMaterialHeader(
+          backgroundColor: AppColors.colorPrimary,
+          color: Colors.white,
+          distance: 40.0,
+        ),
+        child: ListView(
+          children: [
+            _topSection(),
+            _exchangeSection(),
+            // Show the transaction section when loading or if there are transactions
+            if (controller.isLoading.value ||
+                controller.transactions.isNotEmpty)
+              _transactionSection(),
+            _whatsnewSection(),
+            _newsSection(),
+          ],
         ),
       ),
     );
@@ -374,15 +374,12 @@ class HomeView extends BaseView<HomeController> {
   Widget _notifSection() {
     return GestureDetector(
       onTap: () {
-        // context.pushNamed(Routes.notifications.name);
+        Get.toNamed(Routes.NOTIFICATION);
       },
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey, width: 1),
           borderRadius: BorderRadius.circular(30),
         ),
         child: Icon(
@@ -417,10 +414,7 @@ class HomeView extends BaseView<HomeController> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    getGreetingTimeText() + ',',
-                    style: smallBodyTextStyle,
-                  ),
+                  Text(getGreetingTimeText() + ',', style: smallBodyTextStyle),
                   Text(
                     controller.userData.value?.name?.toUpperCase() ?? 'USER',
                     style: regularBodyTextStyle.copyWith(
@@ -444,10 +438,7 @@ class HomeView extends BaseView<HomeController> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(
-            color: Colors.white,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white, width: 1),
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -487,8 +478,9 @@ class HomeView extends BaseView<HomeController> {
                       children: [
                         Text(
                           'Failed to load products',
-                          style:
-                              smallBodyTextStyle.copyWith(color: Colors.grey),
+                          style: smallBodyTextStyle.copyWith(
+                            color: Colors.grey,
+                          ),
                         ),
                         SizedBox(height: 10),
                         TextButton(
@@ -529,19 +521,19 @@ class HomeView extends BaseView<HomeController> {
                 itemCount: controller.products.length > 7
                     ? 8 // Show 7 products + "More" button
                     : controller.products.length +
-                        1, // All products + "More" button
+                          1, // All products + "More" button
                 itemBuilder: (context, index) {
                   // If this is the last item and we have 7 or more products, or if we have fewer products and this is the last one
                   bool isLastItem =
                       (controller.products.length > 7 && index == 7) ||
-                          (controller.products.length <= 7 &&
-                              index == controller.products.length);
+                      (controller.products.length <= 7 &&
+                          index == controller.products.length);
 
                   if (isLastItem) {
                     return ProductItem(
                       onTap: () {
-                        // Navigate to all products/rates page
-                        Get.toNamed(Routes.RATE);
+                        // Navigate to all products page using named route
+                        Get.toNamed(Routes.HOME_MORE);
                       },
                       isMore: true,
                     );
@@ -552,10 +544,11 @@ class HomeView extends BaseView<HomeController> {
                     onTap: () {
                       // Navigate to exchange page with the product data in a map with a flag
                       print(
-                          "Navigating to exchange with product: ${controller.products[index].name}");
-                      // Delete any existing controller before navigating to ensure a fresh state
+                        "Navigating to exchange with product: ${controller.products[index].name}",
+                      );
+                      // Force delete any existing controller before navigating to ensure a fresh state
                       if (Get.isRegistered<ExchangeController>()) {
-                        Get.delete<ExchangeController>();
+                        Get.delete<ExchangeController>(force: true);
                       }
 
                       // Navigate to exchange with the selected product
@@ -583,10 +576,7 @@ class HomeView extends BaseView<HomeController> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(
-            color: Colors.white,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white, width: 1),
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -613,7 +603,10 @@ class HomeView extends BaseView<HomeController> {
                   Spacer(),
                   TextButton(
                     onPressed: () {
-                      Get.toNamed(Routes.HISTORY);
+                      Get.toNamed(
+                        Routes.HISTORY,
+                        arguments: {'fromHome': true},
+                      );
                     },
                     child: Text(
                       'View All',
@@ -629,8 +622,10 @@ class HomeView extends BaseView<HomeController> {
               Obx(() {
                 if (controller.isLoading.value) {
                   return Column(
-                    children:
-                        List.generate(3, (_) => _buildShimmerTransactionItem()),
+                    children: List.generate(
+                      3,
+                      (_) => _buildShimmerTransactionItem(),
+                    ),
                   );
                 }
 
@@ -638,15 +633,19 @@ class HomeView extends BaseView<HomeController> {
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemCount: controller.transactions.length,
+                  itemCount: controller.transactions.length > 3
+                      ? 3
+                      : controller.transactions.length,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: HistoryItem(
                         transaction: controller.transactions[index],
                         onTap: () {
-                          Get.toNamed(Routes.TRANSACTION_DETAIL,
-                              arguments: controller.transactions[index]);
+                          Get.toNamed(
+                            Routes.TRANSACTION_DETAIL,
+                            arguments: controller.transactions[index],
+                          );
                         },
                       ),
                     );
@@ -701,7 +700,7 @@ class HomeView extends BaseView<HomeController> {
               child: CustomCarouselView(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 itemSnapping: true,
                 itemExtent: Get.width * 0.8,
@@ -713,17 +712,18 @@ class HomeView extends BaseView<HomeController> {
 
                   print(promo);
 
-                  Get.to(() => PromoDetailView(),
-                      binding: PromoBinding(), arguments: promo);
+                  Get.to(
+                    () => PromoDetailView(),
+                    binding: PromoBinding(),
+                    arguments: promo,
+                  );
                 },
                 children: controller.promos
-                    .map(
-                      (promo) => PromoItem(promo: promo),
-                    )
+                    .map((promo) => PromoItem(promo: promo))
                     .toList(),
               ),
             );
-          })
+          }),
         ],
       ),
     );
@@ -735,10 +735,7 @@ class HomeView extends BaseView<HomeController> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(
-            color: Colors.white,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white, width: 1),
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -796,9 +793,7 @@ class HomeView extends BaseView<HomeController> {
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: NewsItem(
-                          blogModel: blogModel,
-                        ),
+                        child: NewsItem(blogModel: blogModel),
                       );
                     },
                   ),

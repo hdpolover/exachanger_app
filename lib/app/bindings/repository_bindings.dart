@@ -9,6 +9,8 @@ import 'package:exachanger_get_app/app/data/repository/promo/promo_repository_im
 import 'package:get/get.dart';
 
 import '../data/repository/blog/blog_repository_impl.dart';
+import '../data/repository/notification/notification_repository.dart';
+import '../data/repository/notification/notification_repository_impl.dart';
 import '../data/repository/promo/promo_repository.dart';
 import '../data/repository/transaction/transaction_repository.dart';
 import '../data/repository/transaction/transaction_repository_impl.dart';
@@ -50,6 +52,11 @@ class RepositoryBindings implements Bindings {
     Get.lazyPut<ProductRepository>(
       () => ProductRepositoryImpl(),
       tag: (ProductRepository).toString(),
+    );
+    // notification repository
+    Get.lazyPut<NotificationRepository>(
+      () => NotificationRepositoryImpl(),
+      tag: (NotificationRepository).toString(),
     );
   }
 }

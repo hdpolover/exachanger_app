@@ -2,31 +2,43 @@ import 'package:exachanger_get_app/app/data/models/blog_model.dart';
 import 'package:exachanger_get_app/app/data/models/product_model.dart';
 import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/data/models/transaction_model.dart';
+import 'package:exachanger_get_app/app/data/models/notification_model.dart';
 import 'package:exachanger_get_app/app/data/repository/blog/blog_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/product/product_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/promo/promo_repository.dart';
 import 'package:exachanger_get_app/app/data/repository/transaction/transaction_repository.dart';
+import 'package:exachanger_get_app/app/data/repository/notification/notification_repository.dart';
 import 'package:get/get.dart';
 
 /// DataService acts as a central repository for shared data across the app
 /// It persists data between screens and controllers
 class DataService extends GetxService {
   // Data repositories
-  final PromoRepository promoRepository =
-      Get.find(tag: (PromoRepository).toString());
-  final BlogRepository blogRepository =
-      Get.find(tag: (BlogRepository).toString());
-  final TransactionRepository transactionRepository =
-      Get.find(tag: (TransactionRepository).toString());
-  final ProductRepository productRepository =
-      Get.find(tag: (ProductRepository).toString());
+  final PromoRepository promoRepository = Get.find(
+    tag: (PromoRepository).toString(),
+  );
+  final BlogRepository blogRepository = Get.find(
+    tag: (BlogRepository).toString(),
+  );
+  final TransactionRepository transactionRepository = Get.find(
+    tag: (TransactionRepository).toString(),
+  );
+  final ProductRepository productRepository = Get.find(
+    tag: (ProductRepository).toString(),
+  );
+  
+  final NotificationRepository notificationRepository = Get.find(
+    tag: (NotificationRepository).toString(),
+  );
 
   // Observable data containers
   final Rx<List<PromoModel>> promoList = Rx<List<PromoModel>>([]);
   final Rx<List<BlogModel>> blogList = Rx<List<BlogModel>>([]);
-  final Rx<List<TransactionModel>> transactionList =
-      Rx<List<TransactionModel>>([]);
+  final Rx<List<TransactionModel>> transactionList = Rx<List<TransactionModel>>(
+    [],
+  );
   final Rx<List<ProductModel>> productList = Rx<List<ProductModel>>([]);
+  final Rx<List<NotificationModel>> notificationList = Rx<List<NotificationModel>>([]);
   // Flag to indicate if data has been loaded
   final RxBool dataLoaded = false.obs;
 
@@ -46,6 +58,7 @@ class DataService extends GetxService {
     List<BlogModel>? blogs,
     List<TransactionModel>? transactions,
     List<ProductModel>? products,
+    List<NotificationModel>? notifications,
   }) {
     if (promos != null && promos.isNotEmpty) {
       promoList.value = promos;
@@ -63,6 +76,10 @@ class DataService extends GetxService {
       productList.value = products;
     }
 
+    if (notifications != null && notifications.isNotEmpty) {
+      notificationList.value = notifications;
+    }
+
     // If all data is loaded, set the flag
     if (promoList.value.isNotEmpty &&
         blogList.value.isNotEmpty &&
@@ -72,10 +89,12 @@ class DataService extends GetxService {
     }
 
     // Print data status for debugging
-    print('DataService updated: promos=${promoList.value.length}, '
-        'blogs=${blogList.value.length}, '
-        'transactions=${transactionList.value.length}, '
-        'products=${productList.value.length}');
+    print(
+      'DataService updated: promos=${promoList.value.length}, '
+      'blogs=${blogList.value.length}, '
+      'transactions=${transactionList.value.length}, '
+      'products=${productList.value.length}',
+    );
   }
 
   /// Load/refresh all data from API
@@ -123,38 +142,52 @@ class DataService extends GetxService {
       transactionList.value =
           transactions; // Print raw products data for debugging
       print(
-          'DEBUG - DataService.refreshAllData: Raw products from API: ${products.length}');
+        'DEBUG - DataService.refreshAllData: Raw products from API: ${products.length}',
+      );
       if (products.isNotEmpty) {
         print(
-            'DEBUG - DataService.refreshAllData: Raw product statuses: ${products.map((p) => p.status).toList()}');
-
-        // Filter only active products (status == 1)
-        List<ProductModel> activeProducts =
-            products.where((p) => p.status == 1).toList();
+          'DEBUG - DataService.refreshAllData: Raw product statuses: ${products.map((p) => p.status).toList()}',
+        ); // Filter only active products with active rates
+        List<ProductModel> activeProducts = products
+            .where(
+              (p) =>
+                  (p.status == "1" ||
+                      p.status == "active" ||
+                      p.status == 1.toString()) &&
+                  p.rates != null &&
+                  p.rates!.isNotEmpty &&
+                  p.rates!.any((rate) => rate.status == 'active'),
+            )
+            .toList();
 
         // Only update if we actually got active products, otherwise keep existing
         if (activeProducts.isNotEmpty) {
           productList.value = activeProducts;
         } else {
           print(
-              'DEBUG - DataService.refreshAllData: No active products found, keeping existing products');
+            'DEBUG - DataService.refreshAllData: No active products found, keeping existing products',
+          );
         }
 
         // Log filtered products count
         print(
-            'DEBUG - DataService.refreshAllData: Active products after filter: ${productList.value.length}');
+          'DEBUG - DataService.refreshAllData: Active products after filter: ${productList.value.length}',
+        );
       } else {
         print(
-            'DEBUG - DataService.refreshAllData: No products fetched from API, keeping existing products');
+          'DEBUG - DataService.refreshAllData: No products fetched from API, keeping existing products',
+        );
       }
 
       // Set loaded flag
       dataLoaded.value = true;
 
-      print('Data refreshed successfully: promos=${promos.length}, '
-          'blogs=${blogs.length}, '
-          'transactions=${transactions.length}, '
-          'products=${products.length}');
+      print(
+        'Data refreshed successfully: promos=${promos.length}, '
+        'blogs=${blogs.length}, '
+        'transactions=${transactions.length}, '
+        'products=${products.length}',
+      );
     } catch (e) {
       print('Error refreshing data: $e');
       throw e;

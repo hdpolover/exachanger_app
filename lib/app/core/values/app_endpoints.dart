@@ -11,7 +11,9 @@ abstract class AppEndpoints {
   // blog
   static const String blog = 'blog';
   // transactions
-  static const String transactions = 'transaction/get-by-user';
+  static const String transactions = '/transaction';
+  static const String transactionHistory =
+      '/transaction/get-by-user?page=1&limit=10&sort=created_at&order=ASC';
 
   // products
   static const String products = 'product';

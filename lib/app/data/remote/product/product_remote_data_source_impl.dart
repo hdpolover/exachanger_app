@@ -10,12 +10,29 @@ import 'product_remote_data_source.dart';
 class ProductRemoteDataSourceImpl extends BaseRemoteSource
     implements ProductRemoteDataSource {
   List<ProductModel> _parseData(Response<dynamic> response) {
-    ApiResponseModel apiResponseModel =
-        ApiResponseModel.fromJson(response.data);
+    ApiResponseModel apiResponseModel = ApiResponseModel.fromJson(
+      response.data,
+    );
 
-    final data = apiResponseModel.data['data'] as List<dynamic>;
+    // Handle different response structures
+    dynamic data;
+    if (apiResponseModel.data is Map<String, dynamic> &&
+        (apiResponseModel.data as Map<String, dynamic>).containsKey('data')) {
+      // Nested structure: { "data": { "data": [...] } }
+      data = apiResponseModel.data['data'];
+    } else if (apiResponseModel.data is List) {
+      // Direct list: { "data": [...] }
+      data = apiResponseModel.data;
+    } else {
+      // Fallback: treat as direct data
+      data = apiResponseModel.data;
+    }
 
-    // Parse products
+    // Ensure data is a List
+    if (data is! List) {
+      print("ERROR: Expected List but got ${data.runtimeType}: $data");
+      return [];
+    } // Parse products
     final List<ProductModel> products = data
         .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -24,8 +41,9 @@ class ProductRemoteDataSourceImpl extends BaseRemoteSource
   }
 
   ProductModel _parseProductData(Response<dynamic> response) {
-    ApiResponseModel apiResponseModel =
-        ApiResponseModel.fromJson(response.data);
+    ApiResponseModel apiResponseModel = ApiResponseModel.fromJson(
+      response.data,
+    );
 
     return ProductModel.fromJson(apiResponseModel.data as Map<String, dynamic>);
   }
@@ -37,8 +55,9 @@ class ProductRemoteDataSourceImpl extends BaseRemoteSource
     var dioCall = dioClient.get(endpoint);
 
     try {
-      return callApiWithErrorParser(dioCall)
-          .then((response) => _parseData(response));
+      return callApiWithErrorParser(
+        dioCall,
+      ).then((response) => _parseData(response));
     } catch (e) {
       rethrow;
     }
@@ -51,8 +70,9 @@ class ProductRemoteDataSourceImpl extends BaseRemoteSource
     var dioCall = dioClient.get(endpoint);
 
     try {
-      return callApiWithErrorParser(dioCall)
-          .then((response) => _parseProductData(response));
+      return callApiWithErrorParser(
+        dioCall,
+      ).then((response) => _parseProductData(response));
     } catch (e) {
       rethrow;
     }

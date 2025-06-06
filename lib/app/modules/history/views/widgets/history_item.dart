@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
@@ -11,11 +9,7 @@ import '../../../../core/widgets/status_chip.dart';
 
 class HistoryItem extends StatelessWidget {
   final TransactionModel transaction;
-  const HistoryItem({
-    super.key,
-    this.onTap,
-    required this.transaction,
-  });
+  const HistoryItem({super.key, this.onTap, required this.transaction});
 
   final VoidCallback? onTap;
 
@@ -26,18 +20,14 @@ class HistoryItem extends StatelessWidget {
       children: [
         CachedNetworkImage(
           imageUrl: url,
-          errorWidget: (context, url, error) => Image.asset(
-            AppImages.logo,
-            width: 15,
-          ),
+          errorWidget: (context, url, error) =>
+              Image.asset(AppImages.logo, width: 15),
           width: 15,
         ),
         SizedBox(width: 5),
         Text(
           name,
-          style: extraSmallBodyTextStyle.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: extraSmallBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -63,22 +53,17 @@ class HistoryItem extends StatelessWidget {
                     _productView(from.image!, from.name!),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Icon(
-                        Icons.arrow_forward,
-                        size: 20,
-                      ),
+                      child: Icon(Icons.arrow_forward, size: 20),
                     ),
                     _productView(to.product!.image!, to.product!.name!),
                   ],
                 ),
-                StatusChip(status: status)
+                StatusChip(status: status),
               ],
             ),
             Text(
               CommonFunctions.formatDateTime(DateTime.now()),
-              style: extraSmallBodyTextStyle.copyWith(
-                color: Colors.grey,
-              ),
+              style: extraSmallBodyTextStyle.copyWith(color: Colors.grey),
             ),
           ],
         ),
@@ -88,44 +73,68 @@ class HistoryItem extends StatelessWidget {
   }
 
   _bottomSection() {
+    // Check if wallet address exists and is not empty
+    String? walletAddress = transaction.transferMeta?.walletAddress;
+    bool hasWalletAddress =
+        walletAddress != null && walletAddress.trim().isNotEmpty;
+
+    // Get blockchain/crypto information for display
+    String blockchainLabel = 'Wallet Address';
+    if (transaction.products != null && transaction.products!.isNotEmpty) {
+      From? from = transaction.products![0].productMeta?.from;
+      if (from != null && from.code != null) {
+        blockchainLabel = '${from.code} Address';
+        // If there are blockchains, use the first one's name
+        if (from.blockchains != null && from.blockchains!.isNotEmpty) {
+          String blockchainName =
+              from.blockchains![0].name ?? from.blockchains![0].code ?? '';
+          if (blockchainName.isNotEmpty) {
+            blockchainLabel = '${from.code} $blockchainName Address';
+          }
+        }
+      }
+    }
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: hasWalletAddress
+          ? MainAxisAlignment.spaceBetween
+          : MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'USDT BEP20 Address',
-              style: extraSmallBodyTextStyle.copyWith(
-                color: Colors.grey,
-              ),
+        // Only show blockchain address section if wallet address exists
+        if (hasWalletAddress) ...[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  blockchainLabel,
+                  style: extraSmallBodyTextStyle.copyWith(color: Colors.grey),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  walletAddress,
+                  style: regularBodyTextStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ],
             ),
-            SizedBox(height: 5),
-            Text(
-              '0x4f9778b95ad9454df8e2fed fce38ca754295e970',
-              style: regularBodyTextStyle.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(width: 10),
+          ),
+          SizedBox(width: 10),
+        ],
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              'Total',
-              style: extraSmallBodyTextStyle.copyWith(
-                color: Colors.grey,
-              ),
+              'Amount Received',
+              style: extraSmallBodyTextStyle.copyWith(color: Colors.grey),
             ),
             SizedBox(height: 5),
             Text(
               CommonFunctions.formatUSD(transaction.total!),
-              style: bigBodyTextStyle.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: bigBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -153,11 +162,7 @@ class HistoryItem extends StatelessWidget {
           ],
         ),
         child: Column(
-          children: [
-            _topSection(),
-            SizedBox(height: 10),
-            _bottomSection(),
-          ],
+          children: [_topSection(), SizedBox(height: 10), _bottomSection()],
         ),
       ),
     );

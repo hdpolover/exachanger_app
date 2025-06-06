@@ -14,6 +14,8 @@ import '../data/remote/transaction/transaction_remote_data_source.dart';
 import '../data/remote/transaction/transaction_remote_data_source_impl.dart';
 import '/app/data/remote/github_remote_data_source.dart';
 import '/app/data/remote/github_remote_data_source_impl.dart';
+import '../data/remote/notification/notification_remote_data_source.dart';
+import '../data/remote/notification/notification_remote_data_source_impl.dart';
 
 class RemoteSourceBindings implements Bindings {
   @override
@@ -51,6 +53,12 @@ class RemoteSourceBindings implements Bindings {
     Get.lazyPut<ProductRemoteDataSource>(
       () => ProductRemoteDataSourceImpl(),
       tag: (ProductRemoteDataSource).toString(),
+    );
+    
+    // notification remote data source
+    Get.lazyPut<NotificationRemoteDataSource>(
+      () => NotificationRemoteDataSourceImpl(),
+      tag: (NotificationRemoteDataSource).toString(),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:exachanger_get_app/app/services/connectivity_service.dart';
 import 'package:exachanger_get_app/app/services/data_service.dart';
 import 'package:get/get.dart';
 
@@ -11,6 +12,9 @@ class InitialBinding implements Bindings {
     RepositoryBindings().dependencies();
     RemoteSourceBindings().dependencies();
     LocalSourceBindings().dependencies();
+
+    // Initialize ConnectivityService first
+    Get.put<ConnectivityService>(ConnectivityService(), permanent: true);
 
     // Initialize DataService as a persistent service
     // Using put instead of putAsync to ensure the service is immediately available

@@ -16,9 +16,7 @@ class PromoItem extends StatelessWidget {
     double w = MediaQuery.sizeOf(context).width * 0.8;
 
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
       height: h,
       width: w,
       child: Hero(
@@ -26,10 +24,7 @@ class PromoItem extends StatelessWidget {
         child: CachedNetworkImage(
           imageUrl: promo.image ?? AppImages.logo,
           fit: BoxFit.cover,
-          placeholder: (context, url) => ShimmerWidget(
-            height: h,
-            width: w,
-          ),
+          placeholder: (context, url) => ShimmerWidget(height: h, width: w),
           errorWidget: (context, url, error) => NoImage(),
         ),
       ),

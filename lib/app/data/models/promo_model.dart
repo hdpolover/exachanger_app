@@ -44,7 +44,6 @@ class PromoModel {
     this.updatedAt,
     this.deletedAt,
   });
-
   factory PromoModel.fromJson(Map<String, dynamic> json) {
     return PromoModel(
       id: json['id'],
@@ -55,12 +54,22 @@ class PromoModel {
       code: json['code'],
       startDate: json['start_date'],
       endDate: json['end_date'],
-      quota: json['quota'],
-      status: json['status'],
+      quota: _parseIntFromDynamic(json['quota']),
+      status: _parseIntFromDynamic(json['status']),
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       deletedAt: json['deleted_at'],
     );
+  }
+
+  // Helper method to safely parse int from dynamic value
+  static int? _parseIntFromDynamic(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) {
+      return int.tryParse(value);
+    }
+    return null;
   }
 
   @override

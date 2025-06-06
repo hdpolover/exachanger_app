@@ -15,16 +15,30 @@ class TransferDataModel {
     this.createdAt,
     this.updatedAt,
   });
-
   factory TransferDataModel.fromJson(Map<String, dynamic> json) {
     return TransferDataModel(
       id: json['id'],
       type: json['type'],
       value: json['value'],
-      status: json['status'],
+      status: _parseIntFromDynamic(json['status']),
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
     );
+  }
+
+  static int? _parseIntFromDynamic(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        print("ERROR: Could not parse '$value' as int");
+        return null;
+      }
+    }
+    print("ERROR: Unexpected type ${value.runtimeType} for int field: $value");
+    return null;
   }
 
   Map<String, dynamic> toJson() {

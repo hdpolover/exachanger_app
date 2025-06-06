@@ -2,9 +2,11 @@ import 'package:exachanger_get_app/app/modules/blog/views/blog_detail_view.dart'
 
 import '../modules/exchange/views/proceed_exchange_view.dart';
 import '../modules/exchange/views/confirm_exchange_view.dart';
+import '../modules/home/views/home_more_view.dart';
+import '../modules/home/views/notification_view.dart';
 import 'package:get/get.dart';
 
-import '../middlewares/blog_middleware.dart';
+// import '../middlewares/blog_middleware.dart'; // Temporarily disabled
 import '../modules/blog/bindings/blog_binding.dart';
 import '../modules/blog/views/blog_view.dart';
 import '../modules/exchange/bindings/exchange_binding.dart';
@@ -41,21 +43,13 @@ class AppPages {
   static const INITIAL = Routes.SPLASH;
 
   static final routes = [
-    GetPage(
-      name: _Paths.HOME,
-      page: () => HomeView(),
-      binding: HomeBinding(),
-    ),
+    GetPage(name: _Paths.HOME, page: () => HomeView(), binding: HomeBinding()),
     GetPage(
       name: _Paths.PROFILE,
       page: () => ProfileView(),
       binding: ProfileBinding(),
     ),
-    GetPage(
-      name: _Paths.MAIN,
-      page: () => MainView(),
-      binding: MainBinding(),
-    ),
+    GetPage(name: _Paths.MAIN, page: () => MainView(), binding: MainBinding()),
     GetPage(
       name: _Paths.WELCOME,
       page: () => WelcomeView(),
@@ -81,24 +75,13 @@ class AppPages {
       page: () => HistoryView(),
       binding: HistoryBinding(),
     ),
-    GetPage(
-      name: _Paths.BLOG,
-      page: () => BlogView(),
-      binding: BlogBinding(),
-    ),
+    GetPage(name: _Paths.BLOG, page: () => BlogView(), binding: BlogBinding()),
     GetPage(
       name: _Paths.BLOG_DETAIL,
       page: () => BlogDetailView(),
       binding: BlogBinding(),
-      middlewares: [
-        BlogMiddleware(),
-      ],
     ),
-    GetPage(
-      name: _Paths.RATE,
-      page: () => RateView(),
-      binding: RateBinding(),
-    ),
+    GetPage(name: _Paths.RATE, page: () => RateView(), binding: RateBinding()),
     GetPage(
       name: _Paths.EXCHANGE,
       page: () => ExchangeView(),
@@ -123,6 +106,16 @@ class AppPages {
       name: _Paths.CONFIRM_EXCHANGE,
       page: () => ConfirmExchangeView(),
       binding: ExchangeBinding(),
+    ),
+    GetPage(
+      name: _Paths.HOME_MORE,
+      page: () => HomeMoreView(),
+      binding: HomeBinding(),
+    ),
+    GetPage(
+      name: _Paths.NOTIFICATION,
+      page: () => NotificationView(),
+      binding: HomeBinding(),
     ),
   ];
 }

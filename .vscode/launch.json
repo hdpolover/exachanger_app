@@ -1,0 +1,53 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "name": "Flutter (Mobile)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            // "args": ["--no-web-browser-launch"],
+            "flutterMode": "debug"
+        },
+        {
+            "name": "Flutter (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "flutterMode": "debug"
+        },
+        {
+            "name": "Flutter (Edge)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "edge",
+            "flutterMode": "debug"
+        },        {
+            "name": "Flutter (Windows)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "windows",
+            "flutterMode": "debug"
+        },        {
+            "name": "Flutter (Android Emulator)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "emulator-5554",
+            "flutterMode": "debug",
+            "args": ["--enable-software-rendering", "--no-enable-impeller"]
+        },
+        {
+            "name": "Flutter (Android Emulator - Hardware Rendering)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "emulator-5554", 
+            "flutterMode": "debug"
+        }
+    ]
+}

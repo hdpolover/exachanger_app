@@ -5,11 +5,12 @@ import '/app/data/local/preference/preference_manager.dart';
 import '/app/network/dio_provider.dart';
 
 class DioRequestRetrier {
-  final dioClient = DioProvider.tokenClient;
+  final dioClient = DioProvider.withAuth;
   final RequestOptions requestOptions;
 
-  final PreferenceManager _preferenceManager =
-      getx.Get.find(tag: (PreferenceManager).toString());
+  final PreferenceManager _preferenceManager = getx.Get.find(
+    tag: (PreferenceManager).toString(),
+  );
 
   DioRequestRetrier({required this.requestOptions});
 
@@ -28,13 +29,12 @@ class DioRequestRetrier {
   }
 
   Future<Map<String, String>> getCustomHeaders() async {
-    final String accessToken =
-        await _preferenceManager.getString(PreferenceManager.keyToken);
+    final String accessToken = await _preferenceManager.getString(
+      PreferenceManager.keyToken,
+    );
     var customHeaders = {'content-type': 'application/json'};
     if (accessToken.trim().isNotEmpty) {
-      customHeaders.addAll({
-        'Authorization': "Bearer $accessToken",
-      });
+      customHeaders.addAll({'Authorization': "Bearer $accessToken"});
     }
 
     return customHeaders;

@@ -11,25 +11,22 @@ class NewsItem extends StatelessWidget {
   final BlogModel blogModel;
 
   const NewsItem({super.key, required this.blogModel});
-
   @override
   Widget build(BuildContext context) {
-    String date = blogModel.createdAt!;
+    String date = blogModel.createdAt ?? '';
 
     return GestureDetector(
       onTap: () {
+        print('Navigating to blog detail: ${blogModel.title}');
         Get.toNamed(Routes.BLOG_DETAIL, arguments: blogModel);
       },
       child: Container(
-        padding: EdgeInsets.only(bottom: 12),
+        padding: EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
           color: Colors.white,
           // add border just the bottom
           border: Border(
-            bottom: BorderSide(
-              color: Colors.grey.shade300,
-              width: 1,
-            ),
+            bottom: BorderSide(color: Colors.grey.shade300, width: 1),
           ),
         ),
         child: Row(
@@ -43,7 +40,7 @@ class NewsItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    blogModel.title ?? '',
+                    blogModel.title ?? 'Untitled',
                     style: regularBodyTextStyle.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -58,9 +55,7 @@ class NewsItem extends StatelessWidget {
                     children: [
                       Text(
                         date,
-                        style: smallBodyTextStyle.copyWith(
-                          color: Colors.grey,
-                        ),
+                        style: smallBodyTextStyle.copyWith(color: Colors.grey),
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -75,18 +70,36 @@ class NewsItem extends StatelessWidget {
                 ],
               ),
             ),
-            Hero(
-              tag: blogModel.id!,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: CachedNetworkImage(
-                  imageUrl: blogModel.featuredImage!,
-                  fit: BoxFit.cover,
-                  height: 70,
-                  width: 70,
+            if (blogModel.featuredImage != null &&
+                blogModel.featuredImage!.isNotEmpty)
+              Hero(
+                tag:
+                    blogModel.id ??
+                    'blog_${DateTime.now().millisecondsSinceEpoch}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: CachedNetworkImage(
+                    imageUrl: blogModel.featuredImage!,
+                    fit: BoxFit.cover,
+                    height: 70,
+                    width: 70,
+                    placeholder: (context, url) => Container(
+                      height: 70,
+                      width: 70,
+                      color: Colors.grey.shade300,
+                      child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 70,
+                      width: 70,
+                      color: Colors.grey.shade300,
+                      child: Icon(Icons.article, color: Colors.grey),
+                    ),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),

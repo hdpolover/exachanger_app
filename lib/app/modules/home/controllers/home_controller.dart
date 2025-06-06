@@ -1,6 +1,7 @@
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
 import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
 import 'package:exachanger_get_app/app/data/models/blog_model.dart';
+import 'package:exachanger_get_app/app/data/models/notification_model.dart';
 import 'package:exachanger_get_app/app/data/models/product_model.dart';
 import 'package:exachanger_get_app/app/data/models/promo_model.dart';
 import 'package:exachanger_get_app/app/data/models/user_model.dart';
@@ -10,22 +11,27 @@ import 'package:exachanger_get_app/app/data/repository/transaction/transaction_r
 import 'package:exachanger_get_app/app/modules/splash/controllers/splash_controller.dart';
 import 'package:exachanger_get_app/app/services/data_service.dart';
 import 'package:get/get.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../data/models/transaction_model.dart';
 import '../../../data/repository/promo/promo_repository.dart';
 
 class HomeController extends BaseController {
-  final PromoRepository promoRepository =
-      Get.find(tag: (PromoRepository).toString());
+  final PromoRepository promoRepository = Get.find(
+    tag: (PromoRepository).toString(),
+  );
 
-  final BlogRepository blogRepository =
-      Get.find(tag: (BlogRepository).toString());
+  final BlogRepository blogRepository = Get.find(
+    tag: (BlogRepository).toString(),
+  );
 
-  final TransactionRepository transactionRepository =
-      Get.find(tag: (TransactionRepository).toString());
+  final TransactionRepository transactionRepository = Get.find(
+    tag: (TransactionRepository).toString(),
+  );
 
-  final ProductRepository productRepository =
-      Get.find(tag: (ProductRepository).toString());
+  final ProductRepository productRepository = Get.find(
+    tag: (ProductRepository).toString(),
+  );
 
   // DataService for sharing data between controllers
   DataService? _dataService;
@@ -57,15 +63,39 @@ class HomeController extends BaseController {
   // products
   Rx<List<ProductModel>> productList = Rx<List<ProductModel>>([]);
   List<ProductModel> get products => productList.value;
+  // notifications
+  Rx<List<NotificationModel>> notificationList = Rx<List<NotificationModel>>(
+    [],
+  );
+  List<NotificationModel> get notifications => notificationList.value;
+  final RxBool isLoadingNotifications = false.obs;
+  final RxString notificationError = "".obs;
+  // Refresh controller for notification pull-to-refresh
+  RefreshController? _notificationRefreshController;
+  // Notification pagination
+  final RxInt notificationPage = 1.obs;
+  final RxBool hasMoreNotifications = true.obs;
+  final RxInt totalNotifications = 0.obs;
+
+  RefreshController get notificationRefreshController {
+    _notificationRefreshController ??= RefreshController(initialRefresh: false);
+    return _notificationRefreshController!;
+  }
 
   // User data
   final PreferenceManagerImpl preferenceManager =
       Get.find<PreferenceManagerImpl>();
   final Rx<UserModel?> userData = Rx<UserModel?>(null);
-
   // Data loading state
   final RxBool isLoading = false.obs;
   final RxString error = "".obs;
+  // Refresh controller for pull-to-refresh
+  RefreshController? _refreshController;
+
+  RefreshController get refreshController {
+    _refreshController ??= RefreshController(initialRefresh: false);
+    return _refreshController!;
+  }
 
   // Load user data
   Future<void> loadUserData() async {
@@ -89,7 +119,8 @@ class HomeController extends BaseController {
             if (rxUser.value != null) {
               userData.value = rxUser.value;
               print(
-                  'User data fetched from reactive object: ${rxUser.value?.name}');
+                'User data fetched from reactive object: ${rxUser.value?.name}',
+              );
               return;
             } else {
               print('Reactive user data found but value is null');
@@ -130,11 +161,20 @@ class HomeController extends BaseController {
         if (_dataService != null && dataService.dataLoaded.value) {
           promoList.value = List<PromoModel>.from(dataService.promoList.value);
           blogList.value = List<BlogModel>.from(dataService.blogList.value);
-          transactionList.value =
-              List<TransactionModel>.from(dataService.transactionList.value);
+          transactionList.value = List<TransactionModel>.from(
+            dataService.transactionList.value,
+          );
           productList.value = List<ProductModel>.from(
-              dataService.productList.value.where((product) =>
-                  product.status == "active")); // Filter active products
+            dataService.productList.value.where(
+              (product) =>
+                  (product.status == "1" ||
+                      product.status == "active" ||
+                      product.status == 1.toString()) &&
+                  product.rates != null &&
+                  product.rates!.isNotEmpty &&
+                  product.rates!.any((rate) => rate.status == 'active'),
+            ),
+          ); // Filter active products with active rates
           print("All data loaded from DataService");
           return;
         }
@@ -144,38 +184,53 @@ class HomeController extends BaseController {
 
       // Method 1: Try to get the splash controller directly
       try {
-        final splashController =
-            Get.find<SplashController>(tag: "splash_controller");
+        final splashController = Get.find<SplashController>(
+          tag: "splash_controller",
+        );
 
         // Create deep copies of lists to avoid reference issues
         if (splashController.promoList.value.isNotEmpty) {
-          promoList.value =
-              List<PromoModel>.from(splashController.promoList.value);
+          promoList.value = List<PromoModel>.from(
+            splashController.promoList.value,
+          );
           print(
-              "Promos loaded from splash controller: ${promoList.value.length}");
+            "Promos loaded from splash controller: ${promoList.value.length}",
+          );
         }
 
         if (splashController.blogList.value.isNotEmpty) {
-          blogList.value =
-              List<BlogModel>.from(splashController.blogList.value);
+          blogList.value = List<BlogModel>.from(
+            splashController.blogList.value,
+          );
           print(
-              "Blogs loaded from splash controller: ${blogList.value.length}");
+            "Blogs loaded from splash controller: ${blogList.value.length}",
+          );
         }
 
         if (splashController.transactionList.value.isNotEmpty) {
           transactionList.value = List<TransactionModel>.from(
-              splashController.transactionList.value);
+            splashController.transactionList.value,
+          );
           print(
-              "Transactions loaded from splash controller: ${transactionList.value.length}");
+            "Transactions loaded from splash controller: ${transactionList.value.length}",
+          );
         }
-
         if (splashController.productList.value.isNotEmpty) {
-          // Filter only active products (status == "active") to match DataService behavior
-          productList.value = List<ProductModel>.from(splashController
-              .productList.value
-              .where((p) => p.status == "active"));
+          // Filter only active products with active rates
+          productList.value = List<ProductModel>.from(
+            splashController.productList.value.where(
+              (p) =>
+                  (p.status == "1" ||
+                      p.status == "active" ||
+                      p.status == 1.toString()) &&
+                  p.rates != null &&
+                  p.rates!.isNotEmpty &&
+                  p.rates!.any((rate) => rate.status == 'active'),
+            ),
+          );
           print(
-              "Products loaded from splash controller: ${productList.value.length}");
+            "Products loaded from splash controller: ${productList.value.length}",
+          );
         }
 
         // Update DataService as well for future use
@@ -184,10 +239,11 @@ class HomeController extends BaseController {
             transactionList.value.isNotEmpty &&
             productList.value.isNotEmpty) {
           dataService.setData(
-              promos: promoList.value,
-              blogs: blogList.value,
-              transactions: transactionList.value,
-              products: productList.value);
+            promos: promoList.value,
+            blogs: blogList.value,
+            transactions: transactionList.value,
+            products: productList.value,
+          );
         }
       } catch (e) {
         print("Method 1 failed: $e");
@@ -196,14 +252,18 @@ class HomeController extends BaseController {
       // Method 2: Try to get cached data from Get storage
       if (promoList.value.isEmpty) {
         try {
-          final cachedPromos =
-              Get.find<Rx<List<PromoModel>>>(tag: "cached_promos");
-          final cachedBlogs =
-              Get.find<Rx<List<BlogModel>>>(tag: "cached_blogs");
-          final cachedTransactions =
-              Get.find<Rx<List<TransactionModel>>>(tag: "cached_transactions");
-          final cachedProducts =
-              Get.find<Rx<List<ProductModel>>>(tag: "cached_products");
+          final cachedPromos = Get.find<Rx<List<PromoModel>>>(
+            tag: "cached_promos",
+          );
+          final cachedBlogs = Get.find<Rx<List<BlogModel>>>(
+            tag: "cached_blogs",
+          );
+          final cachedTransactions = Get.find<Rx<List<TransactionModel>>>(
+            tag: "cached_transactions",
+          );
+          final cachedProducts = Get.find<Rx<List<ProductModel>>>(
+            tag: "cached_products",
+          );
 
           if (cachedPromos.value.isNotEmpty) {
             promoList.value = List<PromoModel>.from(cachedPromos.value);
@@ -216,18 +276,29 @@ class HomeController extends BaseController {
           }
 
           if (cachedTransactions.value.isNotEmpty) {
-            transactionList.value =
-                List<TransactionModel>.from(cachedTransactions.value);
+            transactionList.value = List<TransactionModel>.from(
+              cachedTransactions.value,
+            );
             print(
-                "Transactions loaded from cached data: ${transactionList.value.length}");
+              "Transactions loaded from cached data: ${transactionList.value.length}",
+            );
           }
-
           if (cachedProducts.value.isNotEmpty) {
-            // Filter only active products (status == "active")
+            // Filter only active products with active rates
             productList.value = List<ProductModel>.from(
-                cachedProducts.value.where((p) => p.status == "active"));
+              cachedProducts.value.where(
+                (p) =>
+                    (p.status == "1" ||
+                        p.status == "active" ||
+                        p.status == 1.toString()) &&
+                    p.rates != null &&
+                    p.rates!.isNotEmpty &&
+                    p.rates!.any((rate) => rate.status == 'active'),
+              ),
+            );
             print(
-                "Products loaded from cached data: ${productList.value.length}");
+              "Products loaded from cached data: ${productList.value.length}",
+            );
           }
 
           // Update DataService as well for future use
@@ -236,10 +307,11 @@ class HomeController extends BaseController {
               transactionList.value.isNotEmpty &&
               productList.value.isNotEmpty) {
             dataService.setData(
-                promos: promoList.value,
-                blogs: blogList.value,
-                transactions: transactionList.value,
-                products: productList.value);
+              promos: promoList.value,
+              blogs: blogList.value,
+              transactions: transactionList.value,
+              products: productList.value,
+            );
           }
         } catch (e) {
           print("Method 2 failed: $e");
@@ -266,67 +338,162 @@ class HomeController extends BaseController {
 
     // Fetch promos
     var promoService = promoRepository.getAllPromos();
-    callDataService(promoService, onSuccess: (data) {
-      promoList.value = data;
-      print("Promos fetched in HomeController: ${data.length}");
-    }, onError: (error) {
-      showErrorMessage(error.toString());
-      this.error.value = error.toString();
-    });
+    callDataService(
+      promoService,
+      onSuccess: (data) {
+        promoList.value = data;
+        print("Promos fetched in HomeController: ${data.length}");
+      },
+      onError: (error) {
+        showErrorMessage(error.toString());
+        this.error.value = error.toString();
+      },
+    );
 
     // Fetch blogs
     var blogService = blogRepository.getAllBlogs();
-    callDataService(blogService, onSuccess: (data) {
-      blogList.value = data;
-      print("Blogs fetched in HomeController: ${data.length}");
-    }, onError: (error) {
-      showErrorMessage(error.toString());
-      this.error.value = error.toString();
-    });
+    callDataService(
+      blogService,
+      onSuccess: (data) {
+        blogList.value = data;
+        print("Blogs fetched in HomeController: ${data.length}");
+      },
+      onError: (error) {
+        showErrorMessage(error.toString());
+        this.error.value = error.toString();
+      },
+    );
 
     // Fetch transactions
     var transactionService = transactionRepository.getAllTransactions();
-    callDataService(transactionService, onSuccess: (data) {
-      transactionList.value = data;
-      print("Transactions fetched in HomeController: ${data.length}");
-    }, onError: (error) {
-      showErrorMessage(error.toString());
-      this.error.value = error.toString();
-    });
+    callDataService(
+      transactionService,
+      onSuccess: (data) {
+        transactionList.value = data;
+        print("Transactions fetched in HomeController: ${data.length}");
+      },
+      onError: (error) {
+        showErrorMessage(error.toString());
+        this.error.value = error.toString();
+      },
+    );
 
     // Fetch products
     var productService = productRepository.getAllProducts();
-    callDataService(productService, onSuccess: (data) {
-      // Filter only active products (status == "active") to match DataService behavior
-      productList.value = data.where((p) => p.status == "active").toList();
-      print("Products fetched in HomeController: ${productList.value.length}");
-      isLoading.value = false;
+    callDataService(
+      productService,
+      onSuccess: (data) {
+        // Filter only active products with active rates
+        productList.value = data
+            .where(
+              (p) =>
+                  (p.status == "1" ||
+                      p.status == "active" ||
+                      p.status == 1.toString()) &&
+                  p.rates != null &&
+                  p.rates!.isNotEmpty &&
+                  p.rates!.any((rate) => rate.status == 'active'),
+            )
+            .toList();
+        print(
+          "Products fetched in HomeController: ${productList.value.length}",
+        );
+        isLoading.value = false;
 
-      // Update DataService with newly fetched data
-      dataService.setData(
+        // Update DataService with newly fetched data
+        dataService.setData(
           promos: promoList.value,
           blogs: blogList.value,
           transactions: transactionList.value,
-          products: productList.value);
-    }, onError: (error) {
-      showErrorMessage(error.toString());
-      this.error.value = error.toString();
-      isLoading.value = false;
-    });
+          products: productList.value,
+        );
+      },
+      onError: (error) {
+        showErrorMessage(error.toString());
+        this.error.value = error.toString();
+        isLoading.value = false;
+      },
+    );
   }
 
-  // Refresh data from API (for pull-to-refresh functionality)
+  // Fetch notifications from API
+  Future<void> fetchNotifications({bool refresh = false}) async {
+    if (refresh) {
+      notificationPage.value = 1;
+      hasMoreNotifications.value = true;
+    }
+
+    if (!hasMoreNotifications.value && !refresh) {
+      return;
+    }
+
+    isLoadingNotifications.value = true;
+    notificationError.value = '';
+    try {
+      final notifications = await dataService.notificationRepository
+          .getNotifications(
+            page: notificationPage.value,
+            limit: 10,
+            sort: notificationSortField.value,
+            order: notificationSortOrder.value,
+            title: notificationTitleFilter.value,
+            type: notificationType.value,
+          );
+
+      // Update pagination info from the response
+      // Since we're using a repository that returns just the list, we'll need to
+      // handle pagination info differently based on the response size
+      final hasMore = notifications.isNotEmpty && notifications.length >= 10;
+      hasMoreNotifications.value = hasMore;
+
+      if (refresh || notificationPage.value == 1) {
+        notificationList.value = notifications;
+      } else {
+        notificationList.value = [...notificationList.value, ...notifications];
+      }
+
+      // Increment page for next load
+      if (hasMoreNotifications.value) {
+        notificationPage.value++;
+      }
+    } catch (e) {
+      notificationError.value = 'Error: ${e.toString()}';
+      print("Exception while fetching notifications: $e");
+
+      // Show snackbar for network connectivity issues
+      if (isNetworkError(e)) {
+        showNetworkErrorSnackbar();
+      }
+    } finally {
+      isLoadingNotifications.value = false;
+      if (refresh) {
+        notificationRefreshController.refreshCompleted();
+      }
+    }
+  }
+
+  // Fetch notifications from API
+  Future<void> onNotificationRefresh() async {
+    await fetchNotifications(refresh: true);
+  }
+
+  // Load more notifications
+  Future<void> loadMoreNotifications() async {
+    if (!isLoadingNotifications.value && hasMoreNotifications.value) {
+      await fetchNotifications();
+    }
+  }
+
+  // Refresh data from API (for pull-to-refresh functionality)  Future<void> refreshData() async {  // Refresh data from API (for pull-to-refresh functionality)
   Future<void> refreshData() async {
     // Store current data as backup in case of API failures
-    List<ProductModel> currentProducts =
-        List<ProductModel>.from(productList.value);
-    List<PromoModel> currentPromos = List<PromoModel>.from(promoList.value);
-    List<BlogModel> currentBlogs = List<BlogModel>.from(blogList.value);
-    List<TransactionModel> currentTransactions =
-        List<TransactionModel>.from(transactionList.value);
+    List<ProductModel> currentProducts = List<ProductModel>.from(
+      productList.value,
+    );
 
     print(
-        "DEBUG - Before refresh: Current active products count: ${currentProducts.length}");
+      "DEBUG - Before refresh: Current active products count: ${currentProducts.length}",
+    );
 
     try {
       isLoading.value = true;
@@ -344,24 +511,31 @@ class HomeController extends BaseController {
           blogList.value = List<BlogModel>.from(dataService.blogList.value);
         }
         if (dataService.transactionList.value.isNotEmpty) {
-          transactionList.value =
-              List<TransactionModel>.from(dataService.transactionList.value);
-        }
-        // Make sure we're only getting active products (status == "active") if we have any products
+          transactionList.value = List<TransactionModel>.from(
+            dataService.transactionList.value,
+          );
+        } // Make sure we're only getting active products (status == "1" or "active") if we have any products
         if (dataService.productList.value.isNotEmpty) {
           // Filter the products to only get active ones
           List<ProductModel> activeProducts = dataService.productList.value
-              .where((p) => p.status == "active")
+              .where(
+                (p) =>
+                    p.status == "1" ||
+                    p.status == "active" ||
+                    p.status == 1.toString(),
+              )
               .toList();
 
           if (activeProducts.isNotEmpty) {
             productList.value = activeProducts;
             print(
-                "DEBUG - After refresh: Active products count=${activeProducts.length}");
+              "DEBUG - After refresh: Active products count=${activeProducts.length}",
+            );
           } else {
             // No active products found, keep existing
             print(
-                "DEBUG - No active products found after refresh, keeping existing (${currentProducts.length})");
+              "DEBUG - No active products found after refresh, keeping existing (${currentProducts.length})",
+            );
             if (currentProducts.isNotEmpty) {
               productList.value = currentProducts;
             }
@@ -369,7 +543,8 @@ class HomeController extends BaseController {
         } else {
           // No products at all, keep existing
           print(
-              "DEBUG - No products found in DataService after refresh, keeping existing (${currentProducts.length})");
+            "DEBUG - No products found in DataService after refresh, keeping existing (${currentProducts.length})",
+          );
           if (currentProducts.isNotEmpty) {
             productList.value = currentProducts;
           }
@@ -383,7 +558,8 @@ class HomeController extends BaseController {
       }
     } catch (e) {
       print(
-          "DataService refresh failed, falling back to individual API calls: $e");
+        "DataService refresh failed, falling back to individual API calls: $e",
+      );
       error.value = e.toString();
 
       // Fall back to individual API calls if DataService refresh fails
@@ -435,36 +611,50 @@ class HomeController extends BaseController {
         productRepository.getAllProducts(),
         onSuccess: (data) {
           print(
-              "DEBUG - Fallback refresh: Raw products fetched: ${data.length}");
-
+            "DEBUG - Fallback refresh: Raw products fetched: ${data.length}",
+          );
           if (data.isNotEmpty) {
-            // Filter only active products (status == "active") to match DataService behavior
-            List<ProductModel> activeProducts =
-                data.where((p) => p.status == "active").toList();
+            // Filter only active products with active rates
+            List<ProductModel> activeProducts = data
+                .where(
+                  (p) =>
+                      (p.status == "1" ||
+                          p.status == "active" ||
+                          p.status == 1.toString()) &&
+                      p.rates != null &&
+                      p.rates!.isNotEmpty &&
+                      p.rates!.any((rate) => rate.status == 'active'),
+                )
+                .toList();
             print(
-                "DEBUG - Fallback refresh: Active products filtered: ${activeProducts.length}");
+              "DEBUG - Fallback refresh: Active products filtered: ${activeProducts.length}",
+            );
             if (activeProducts.isNotEmpty) {
               productList.value = activeProducts;
               // Update the DataService with new products
               dataService.setData(products: activeProducts);
             } else {
               print(
-                  "DEBUG - Fallback refresh: No active products found, keeping existing products");
+                "DEBUG - Fallback refresh: No active products found, keeping existing products",
+              );
               // Maintain existing products if available
               if (currentProducts.isNotEmpty) {
                 print(
-                    "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products");
+                  "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products",
+                );
                 // Keep the current products
                 // Don't update DataService with currentProducts to avoid confusion
               }
             }
           } else {
             print(
-                "DEBUG - Fallback refresh: No products returned from API, keeping existing products");
+              "DEBUG - Fallback refresh: No products returned from API, keeping existing products",
+            );
             // Maintain existing products if available
             if (currentProducts.isNotEmpty) {
               print(
-                  "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products");
+                "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products",
+              );
               // Keep the current products
               // Don't update DataService with currentProducts to avoid confusion
             }
@@ -491,6 +681,7 @@ class HomeController extends BaseController {
   @override
   void onInit() {
     super.onInit();
+
     isLoading.value = true; // Start with loading state to show shimmer effects
     getData();
     loadUserData().then((_) {
@@ -499,5 +690,74 @@ class HomeController extends BaseController {
         isLoading.value = false;
       });
     });
+  }
+
+  @override
+  void onClose() {
+    _refreshController?.dispose();
+    _notificationRefreshController?.dispose();
+    super.onClose();
+  }
+
+  // Method for pull-to-refresh
+  Future<void> onRefresh() async {
+    print("DEBUG - Pull to refresh triggered!");
+    try {
+      await refreshData();
+      print("DEBUG - Refresh completed successfully");
+      refreshController.refreshCompleted();
+    } catch (error) {
+      print("DEBUG - Refresh failed: $error");
+      refreshController.refreshFailed();
+    }
+  }
+
+  // Notification filtering and sorting
+  final RxString notificationTitleFilter = ''.obs;
+  final RxString notificationType = ''.obs;
+  final RxString notificationSortField = 'created_at'.obs;
+  final RxString notificationSortOrder = 'DESC'.obs;
+
+  // Apply notification filters and reload
+  void applyNotificationFilters({
+    String? titleFilter,
+    String? typeFilter,
+    String? sortField,
+    String? sortOrder,
+  }) {
+    bool changed = false;
+
+    if (titleFilter != null && titleFilter != notificationTitleFilter.value) {
+      notificationTitleFilter.value = titleFilter;
+      changed = true;
+    }
+
+    if (typeFilter != null && typeFilter != notificationType.value) {
+      notificationType.value = typeFilter;
+      changed = true;
+    }
+
+    if (sortField != null && sortField != notificationSortField.value) {
+      notificationSortField.value = sortField;
+      changed = true;
+    }
+
+    if (sortOrder != null && sortOrder != notificationSortOrder.value) {
+      notificationSortOrder.value = sortOrder;
+      changed = true;
+    }
+
+    if (changed) {
+      fetchNotifications(refresh: true);
+    }
+  }
+
+  // Clear all notification filters
+  void clearNotificationFilters() {
+    notificationTitleFilter.value = '';
+    notificationType.value = '';
+    notificationSortField.value = 'created_at';
+    notificationSortOrder.value = 'DESC';
+    fetchNotifications(refresh: true);
   }
 }
