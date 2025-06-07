@@ -146,23 +146,50 @@ class NotificationView extends BaseView<HomeController> {
                 textStyle: smallBodyTextStyle.copyWith(color: Colors.grey),
               ),
               child: ListView.builder(
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,
+                ),
                 itemCount: groupedNotifications.keys.length,
                 itemBuilder: (context, index) {
                   final date = groupedNotifications.keys.elementAt(index);
                   final notifications = groupedNotifications[date]!;
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        child: Text(
-                          date,
-                          style: regularBodyTextStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.colorPrimary,
+                      // Date header with improved styling
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8, top: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.colorPrimary.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.colorPrimary.withValues(
+                              alpha: 0.1,
+                            ),
                           ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 14,
+                              color: AppColors.colorPrimary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              date,
+                              style: regularBodyTextStyle.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.colorPrimary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       ...notifications
@@ -184,73 +211,285 @@ class NotificationView extends BaseView<HomeController> {
 
   // Build search and filter bar
   Widget _buildSearchBar(BuildContext context) {
-    return Padding(
+    return Container(
+      margin: const EdgeInsets.all(16.0),
       padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Search field
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Search notifications',
-              prefixIcon: Icon(Icons.search),
-              suffixIcon: IconButton(
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                  controller.applyNotificationFilters(titleFilter: '');
-                },
+              hintText: 'Search notifications...',
+              hintStyle: smallBodyTextStyle.copyWith(color: Colors.grey),
+              prefixIcon: Icon(Icons.search, color: AppColors.colorPrimary),
+              suffixIcon: Obx(
+                () => controller.notificationTitleFilter.value.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                          controller.applyNotificationFilters(titleFilter: '');
+                        },
+                      )
+                    : const SizedBox.shrink(),
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(8.0),
+                borderSide: BorderSide(color: Colors.grey.shade300),
               ),
-              contentPadding: EdgeInsets.symmetric(vertical: 0.0),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                borderSide: BorderSide(color: AppColors.colorPrimary, width: 2),
+              ),
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 12.0,
+                horizontal: 16.0,
+              ),
             ),
+            style: regularBodyTextStyle,
             onSubmitted: (value) {
               controller.applyNotificationFilters(titleFilter: value);
             },
+            onChanged: (value) {
+              // Update will be handled automatically by Obx
+            },
           ),
-          SizedBox(height: 8),
-          // Sort options
+          const SizedBox(height: 16),
+
+          // Filters section header
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Obx(
-                () => DropdownButton<String>(
-                  value: controller.notificationSortField.value,
-                  items: [
-                    DropdownMenuItem(value: 'created_at', child: Text('Date')),
-                    DropdownMenuItem(value: 'title', child: Text('Title')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      controller.applyNotificationFilters(sortField: value);
-                    }
-                  },
-                  hint: Text('Sort by'),
+              Icon(Icons.filter_list, size: 18, color: AppColors.colorPrimary),
+              const SizedBox(width: 8),
+              Text(
+                'Filters & Sorting',
+                style: regularBodyTextStyle.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.colorPrimary,
                 ),
               ),
-              Obx(
-                () => DropdownButton<String>(
-                  value: controller.notificationSortOrder.value,
-                  items: [
-                    DropdownMenuItem(value: 'ASC', child: Text('Ascending')),
-                    DropdownMenuItem(value: 'DESC', child: Text('Descending')),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Sort options in a more organized layout
+          Row(
+            children: [
+              // Sort by dropdown
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sort by',
+                      style: smallBodyTextStyle.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                      child: Obx(
+                        () => DropdownButton<String>(
+                          value: controller.notificationSortField.value.isEmpty
+                              ? null
+                              : controller.notificationSortField.value,
+                          isExpanded: true,
+                          underline: Container(),
+                          hint: Text(
+                            'Select field',
+                            style: smallBodyTextStyle.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          style: regularBodyTextStyle,
+                          items: [
+                            DropdownMenuItem(
+                              value: 'created_at',
+                              child: Text('Date', style: regularBodyTextStyle),
+                            ),
+                            DropdownMenuItem(
+                              value: 'title',
+                              child: Text('Title', style: regularBodyTextStyle),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              controller.applyNotificationFilters(
+                                sortField: value,
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ),
                   ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      controller.applyNotificationFilters(sortOrder: value);
-                    }
-                  },
-                  hint: Text('Order'),
                 ),
               ),
-              OutlinedButton(
-                onPressed: () {
-                  controller.clearNotificationFilters();
-                  _searchController.clear();
-                },
-                child: Text('Reset'),
+              const SizedBox(width: 12),
+
+              // Sort order dropdown
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order',
+                      style: smallBodyTextStyle.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                      child: Obx(
+                        () => DropdownButton<String>(
+                          value: controller.notificationSortOrder.value.isEmpty
+                              ? null
+                              : controller.notificationSortOrder.value,
+                          isExpanded: true,
+                          underline: Container(),
+                          hint: Text(
+                            'Select order',
+                            style: smallBodyTextStyle.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          style: regularBodyTextStyle,
+                          items: [
+                            DropdownMenuItem(
+                              value: 'ASC',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.arrow_upward,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Ascending',
+                                    style: regularBodyTextStyle,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'DESC',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.arrow_downward,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Descending',
+                                    style: regularBodyTextStyle,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              controller.applyNotificationFilters(
+                                sortOrder: value,
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Reset button
+              Expanded(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Actions',
+                      style: smallBodyTextStyle.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          controller.clearNotificationFilters();
+                          _searchController.clear();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: AppColors.colorPrimary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.refresh,
+                              size: 16,
+                              color: AppColors.colorPrimary,
+                            ),
+                            Text(
+                              'Reset',
+                              style: extraSmallBodyTextStyle.copyWith(
+                                color: AppColors.colorPrimary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -259,7 +498,7 @@ class NotificationView extends BaseView<HomeController> {
     );
   }
 
-  Widget _buildNotificationItem(notification) {
+  Widget _buildNotificationItem(dynamic notification) {
     // Parse date string to DateTime
     DateTime? dateTime = DateFormatter.parseDate(notification.createdAt);
 
@@ -273,34 +512,40 @@ class NotificationView extends BaseView<HomeController> {
     final displayTime = DateFormatter.formatTime(dateTime);
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.shade100,
-            blurRadius: 2,
+            blurRadius: 8,
+            spreadRadius: 1,
             offset: const Offset(0, 2),
           ),
         ],
+        border: Border.all(color: Colors.grey.shade50, width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(16.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Notification icon
+            // Notification icon with enhanced styling
             Container(
-              width: 40,
-              height: 40,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: iconColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: iconColor.withValues(alpha: 0.2),
+                  width: 1,
+                ),
               ),
-              child: Center(child: Icon(iconData, color: iconColor, size: 20)),
+              child: Center(child: Icon(iconData, color: iconColor, size: 22)),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 16),
             // Notification content
             Expanded(
               child: Column(
@@ -308,31 +553,47 @@ class NotificationView extends BaseView<HomeController> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: Text(
                           notification.title ?? 'Notification',
                           style: regularBodyTextStyle.copyWith(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
+                            height: 1.3,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Text(
-                        displayTime,
-                        style: smallBodyTextStyle.copyWith(
-                          color: Colors.grey,
-                          fontSize: 11,
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.colorPrimary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          displayTime,
+                          style: extraSmallBodyTextStyle.copyWith(
+                            color: AppColors.colorPrimary,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     notification.notification ?? '',
-                    style: smallBodyTextStyle,
-                    maxLines: 2,
+                    style: smallBodyTextStyle.copyWith(
+                      height: 1.4,
+                      color: Colors.grey.shade700,
+                    ),
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -344,22 +605,22 @@ class NotificationView extends BaseView<HomeController> {
     );
   }
 
-  // Helper methods moved to DateFormatter utility class
   // Shimmer loading for notification items
   Widget _buildShimmerNotificationItem() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
       child: Container(
-        margin: EdgeInsets.only(bottom: 12),
-        padding: EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.shade200,
-              blurRadius: 2,
+              color: Colors.grey.shade100,
+              blurRadius: 8,
+              spreadRadius: 1,
               offset: const Offset(0, 2),
             ),
           ],
@@ -369,14 +630,14 @@ class NotificationView extends BaseView<HomeController> {
           children: [
             // Notification icon shimmer
             Container(
-              width: 40,
-              height: 40,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 16),
             // Notification content shimmer
             Expanded(
               child: Column(
@@ -386,7 +647,7 @@ class NotificationView extends BaseView<HomeController> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        width: 150,
+                        width: 180,
                         height: 16,
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -394,28 +655,28 @@ class NotificationView extends BaseView<HomeController> {
                         ),
                       ),
                       Container(
-                        width: 50,
-                        height: 10,
+                        width: 60,
+                        height: 12,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
-                    height: 10,
+                    height: 12,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Container(
-                    width: 150,
-                    height: 10,
+                    width: 200,
+                    height: 12,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(4),
@@ -432,7 +693,7 @@ class NotificationView extends BaseView<HomeController> {
 
   Widget _buildShimmerList() {
     return ListView.builder(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       itemCount: 8, // Show 8 shimmer items
       itemBuilder: (context, index) {
         return _buildShimmerNotificationItem();

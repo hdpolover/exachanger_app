@@ -14,18 +14,20 @@ class PromoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     double h = MediaQuery.sizeOf(context).height * 0.3;
     double w = MediaQuery.sizeOf(context).width * 0.8;
-
     return Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
       height: h,
       width: w,
-      child: Hero(
-        tag: promo.id!,
-        child: CachedNetworkImage(
-          imageUrl: promo.image ?? AppImages.logo,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => ShimmerWidget(height: h, width: w),
-          errorWidget: (context, url, error) => NoImage(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: Hero(
+          tag: promo.id!,
+          child: CachedNetworkImage(
+            imageUrl: promo.image ?? AppImages.logo,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => ShimmerWidget(height: h, width: w),
+            errorWidget: (context, url, error) => NoImage(),
+          ),
         ),
       ),
     );
