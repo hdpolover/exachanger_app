@@ -1,6 +1,7 @@
 import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/core/widgets/custom_loading_dialog.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
@@ -15,20 +16,10 @@ import '../controllers/sign_in_controller.dart';
 class SignInView extends BaseView<SignInController> {
   final _formKey = GlobalKey<FormState>();
 
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-  String? _email;
-  String? _password;
-
-  // // dispose controllers
-  @override
-  onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-  }
-
-  void _submit() {
+  void _submit() async {
     // set email form
     emailController.text = "mahendradwipurwanto@gmail.com";
     // set password form
@@ -36,6 +27,19 @@ class SignInView extends BaseView<SignInController> {
 
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      // Show loading with custom animated dialog
+      Get.dialog(
+        CustomLoadingDialog(
+          message: 'Signing you in...',
+          backgroundColor: Colors.white,
+          textColor: Colors.black87,
+        ),
+        barrierDismissible: false,
+      );
+
+      // Add a small delay to show the beautiful loading animation
+      await Future.delayed(Duration(milliseconds: 500));
 
       Map<String, dynamic> data = {
         'email': emailController.text,
@@ -50,9 +54,7 @@ class SignInView extends BaseView<SignInController> {
 
   @override
   PreferredSizeWidget appBar(BuildContext context) {
-    return AppBar(
-      centerTitle: true,
-    );
+    return AppBar(centerTitle: true);
   }
 
   @override
@@ -63,14 +65,8 @@ class SignInView extends BaseView<SignInController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 8,
         children: [
-          Text(
-            'Welcome Back!',
-            style: titleTextStyle,
-          ),
-          Text(
-            'Sign in to continue',
-            style: regularBodyTextStyle,
-          ),
+          Text('Welcome Back!', style: titleTextStyle),
+          Text('Sign in to continue', style: regularBodyTextStyle),
           _signInForm(),
           Spacer(),
           Align(
@@ -78,10 +74,7 @@ class SignInView extends BaseView<SignInController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Don\'t have an account? ',
-                  style: regularBodyTextStyle,
-                ),
+                Text('Don\'t have an account? ', style: regularBodyTextStyle),
                 InkWell(
                   onTap: () {
                     Get.offAndToNamed(Routes.SIGN_UP);
@@ -126,7 +119,7 @@ class SignInView extends BaseView<SignInController> {
               }
               return null;
             },
-            onChanged: (value) => _email = value, // Dynamically save value
+            onChanged: (value) {}, // Email validation handled by validator
           ),
           CustomTextFormField(
             controller: passwordController,
@@ -143,7 +136,7 @@ class SignInView extends BaseView<SignInController> {
               }
               return null;
             },
-            onChanged: (value) => _password = value, // Dynamically save value
+            onChanged: (value) {}, // Password validation handled by validator
           ),
           Align(
             alignment: Alignment.centerRight,
@@ -155,10 +148,7 @@ class SignInView extends BaseView<SignInController> {
               ),
             ),
           ),
-          CustomButton(
-            label: "Sign In",
-            onPressed: _submit,
-          ),
+          CustomButton(label: "Sign In", onPressed: _submit),
           Center(
             child: Text(
               'or',
@@ -167,7 +157,33 @@ class SignInView extends BaseView<SignInController> {
           ),
           CustomOutlinedButton(
             label: "Google",
-            onPressed: _submit,
+            onPressed: () async {
+              // Show loading with custom animated dialog for Google sign in
+              Get.dialog(
+                CustomLoadingDialog(
+                  message: 'Connecting with Google...',
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black87,
+                ),
+                barrierDismissible: false,
+              );
+
+              // Add a delay to show the loading animation
+              await Future.delayed(Duration(milliseconds: 800));
+
+              // Close the dialog (for now, since Google sign-in isn't implemented)
+              Get.back();
+
+              // Show a message that Google sign-in is coming soon
+              Get.snackbar(
+                'Coming Soon',
+                'Google Sign-In will be available in the next update!',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.blue,
+                colorText: Colors.white,
+                duration: Duration(seconds: 2),
+              );
+            },
           ),
         ],
       ),

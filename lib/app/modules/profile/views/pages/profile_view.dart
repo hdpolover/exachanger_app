@@ -26,70 +26,120 @@ class ProfileView extends BaseView<ProfileController> {
           builder: (BuildContext context) {
             return Dialog(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
               ),
-              elevation: 0,
+              elevation: 8,
               backgroundColor: Colors.transparent,
               child: Container(
-                padding: EdgeInsets.all(20),
+                padding: EdgeInsets.all(32),
+                margin: EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                      offset: Offset(0, 10),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.logout_rounded,
-                      color: Colors.red,
-                      size: 60,
+                    // Icon with background circle
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.logout_rounded,
+                        color: Colors.red,
+                        size: 40,
+                      ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 24),
                     Text(
                       'Logout',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Are you sure you want to logout?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
+                    SizedBox(height: 12),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Are you sure you want to logout?\nYou will need to sign in again to access your account.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          height: 1.4,
+                        ),
+                      ),
                     ),
-                    SizedBox(height: 24),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    SizedBox(height: 32),
+                    // Buttons with better spacing
+                    Row(
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-
-                            // Clear user data and navigate to login page
-                            PreferenceManagerImpl().logout();
-                            Get.offAllNamed(Routes.WELCOME);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.colorPrimary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey.shade100,
+                              foregroundColor: Colors.grey[700],
+                              elevation: 0,
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: Colors.grey.shade300,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                          child: Text('Logout'),
                         ),
                         SizedBox(width: 16),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade200,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+
+                              // Clear user data and navigate to login page
+                              PreferenceManagerImpl().logout();
+                              Get.offAllNamed(Routes.WELCOME);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              elevation: 2,
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Logout',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                          child: Text('Cancel'),
                         ),
                       ],
                     ),
@@ -105,10 +155,7 @@ class ProfileView extends BaseView<ProfileController> {
         height: 60,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(
-            color: Colors.red,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.red, width: 1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Center(
@@ -126,44 +173,44 @@ class ProfileView extends BaseView<ProfileController> {
   }
 
   List<Widget> get _getItems => [
-        SettingItem(
-          icon: Icons.person,
-          title: 'Profile Information',
-          subtitle: 'Manage account details',
-          onTap: () => () {
-            // Handle navigation
-          },
-        ),
-        // referral code
-        SettingItem(
-          icon: Icons.person,
-          title: 'Referral Code',
-          subtitle: 'Invite your friends and earn rewards',
-          onTap: () => () {
-            // Handle navigation
-          },
-        ),
-        // about exchanger
-        SettingItem(
-          icon: Icons.info,
-          title: 'About Exchanger',
-          subtitle: 'Get to know more about Exchanger',
-          onTap: () => () {
-            // Handle navigation
-          },
-        ),
-        // faq
-        SettingItem(
-          icon: Icons.help,
-          title: 'FAQs',
-          subtitle: 'Frequently asked questions',
-          onTap: () => () {
-            // Handle navigation
-          },
-        ),
-        // log out
-        _logOutButton(),
-      ];
+    SettingItem(
+      icon: Icons.person,
+      title: 'Profile Information',
+      subtitle: 'Manage account details',
+      onTap: () => () {
+        // Handle navigation
+      },
+    ),
+    // referral code
+    SettingItem(
+      icon: Icons.person,
+      title: 'Referral Code',
+      subtitle: 'Invite your friends and earn rewards',
+      onTap: () => () {
+        // Handle navigation
+      },
+    ),
+    // about exchanger
+    SettingItem(
+      icon: Icons.info,
+      title: 'About Exchanger',
+      subtitle: 'Get to know more about Exchanger',
+      onTap: () => () {
+        // Handle navigation
+      },
+    ),
+    // faq
+    SettingItem(
+      icon: Icons.help,
+      title: 'FAQs',
+      subtitle: 'Frequently asked questions',
+      onTap: () => () {
+        // Handle navigation
+      },
+    ),
+    // log out
+    _logOutButton(),
+  ];
 
   _buildBottomListSection() {
     String year = DateTime.now().year.toString();
@@ -183,16 +230,12 @@ class ProfileView extends BaseView<ProfileController> {
         children: [
           Text(
             'v$appVersion',
-            style: extraSmallBodyTextStyle.copyWith(
-              color: Colors.grey,
-            ),
+            style: extraSmallBodyTextStyle.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 5),
           Text(
             '� $year $appName. All rights reserved.',
-            style: extraSmallBodyTextStyle.copyWith(
-              color: Colors.grey,
-            ),
+            style: extraSmallBodyTextStyle.copyWith(color: Colors.grey),
           ),
         ],
       ),
@@ -208,9 +251,7 @@ class ProfileView extends BaseView<ProfileController> {
           Container(
             height: Get.height * 0.25,
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.colorPrimary,
-            ),
+            decoration: BoxDecoration(color: AppColors.colorPrimary),
             alignment: Alignment.topCenter,
             padding: EdgeInsets.only(top: 30),
             child: Text(
@@ -236,30 +277,27 @@ class ProfileView extends BaseView<ProfileController> {
                   topRight: Radius.circular(30),
                 ),
               ),
-              padding: EdgeInsets.only(
-                top: Get.height * 0.08,
-                bottom: 20,
-              ),
+              padding: EdgeInsets.only(top: Get.height * 0.08, bottom: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Obx(() => Text(
-                        controller.userData.value?.name?.toUpperCase() ??
-                            'USER',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )),
+                  Obx(
+                    () => Text(
+                      controller.userData.value?.name?.toUpperCase() ?? 'USER',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   SizedBox(height: 4),
-                  Obx(() => Text(
-                        controller.userData.value?.email ??
-                            'You are not logged in',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      )),
+                  Obx(
+                    () => Text(
+                      controller.userData.value?.email ??
+                          'You are not logged in',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -292,10 +330,7 @@ class ProfileView extends BaseView<ProfileController> {
                       decoration: BoxDecoration(
                         color: Colors.green,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        ),
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
                     ),
                   ),
@@ -316,17 +351,10 @@ class ProfileView extends BaseView<ProfileController> {
         Column(
           children: [
             // Top section with blue background
-            Container(
-              height: Get.height * 0.2,
-              color: AppColors.colorPrimary,
-            ),
+            Container(height: Get.height * 0.2, color: AppColors.colorPrimary),
 
             // Remaining space as white
-            Expanded(
-              child: Container(
-                color: Colors.white,
-              ),
-            ),
+            Expanded(child: Container(color: Colors.white)),
           ],
         ),
 
@@ -349,10 +377,12 @@ class ProfileView extends BaseView<ProfileController> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Settings items
-                    ..._getItems.map((item) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: item,
-                        )),
+                    ..._getItems.map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: item,
+                      ),
+                    ),
                   ],
                 ),
               ),

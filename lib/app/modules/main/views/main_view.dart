@@ -22,21 +22,124 @@ class MainView extends BaseView<MainController> {
       return true; // Allow back navigation if there are routes to pop
     }
 
-    // Show confirmation dialog when there's nothing else to pop
+    // Show beautiful confirmation dialog when there's nothing else to pop
     return await Get.dialog<bool>(
-          AlertDialog(
-            title: Text('Exit App'),
-            content: Text('Do you want to exit the app?'),
-            actions: [
-              TextButton(
-                child: Text('No'),
-                onPressed: () => Get.back(result: false),
+          Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 8,
+            backgroundColor: Colors.transparent,
+            child: Container(
+              padding: EdgeInsets.all(32),
+              margin: EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                    offset: Offset(0, 10),
+                  ),
+                ],
               ),
-              TextButton(
-                child: Text('Yes'),
-                onPressed: () => Get.back(result: true),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Icon with background circle
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.colorPrimary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.exit_to_app_rounded,
+                      color: AppColors.colorPrimary,
+                      size: 40,
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                  Text(
+                    'Exit App',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Are you sure you want to exit?\nWe have more great features waiting for you!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 32),
+                  // Buttons with better spacing
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Get.back(result: false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.colorPrimary,
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Stay',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Get.back(result: true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade100,
+                            foregroundColor: Colors.grey[700],
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: Colors.grey.shade300,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Exit',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ) ??
         false; // Default to false if dialog is dismissed
@@ -44,9 +147,7 @@ class MainView extends BaseView<MainController> {
 
   @override
   Widget? bottomNavigationBar() {
-    return BottomNavBar(
-      onMenuSelected: controller.onMenuSelected,
-    );
+    return BottomNavBar(onMenuSelected: controller.onMenuSelected);
   }
 
   // floating action button
@@ -55,10 +156,7 @@ class MainView extends BaseView<MainController> {
     return FloatingActionButton(
       backgroundColor: AppColors.colorPrimary,
       shape: CircleBorder(),
-      child: Icon(
-        FontAwesomeIcons.arrowsRotate,
-        color: Colors.white,
-      ),
+      child: Icon(FontAwesomeIcons.arrowsRotate, color: Colors.white),
       onPressed: () {
         // _fabAnimationController.reset();
         // _borderRadiusAnimationController.reset();
@@ -93,9 +191,6 @@ class MainView extends BaseView<MainController> {
 
   @override
   Widget body(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Obx(() => _tabsShown()),
-    );
+    return WillPopScope(onWillPop: _onWillPop, child: Obx(() => _tabsShown()));
   }
 }
