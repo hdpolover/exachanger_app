@@ -63,10 +63,28 @@ Exception _parseDioErrorResponse(DioException dioError) {
       return ServiceUnavailableException("Service Temporarily Unavailable");
     case HttpStatus.notFound:
       return NotFoundException(serverMessage ?? "", status ?? "");
+    case HttpStatus.internalServerError:
+      return ApiException(
+        httpCode: statusCode,
+        status: status ?? "",
+        message:
+            serverMessage ??
+            "The server is currently experiencing issues. Please try again later.",
+      );
+    case HttpStatus.badGateway:
+    case HttpStatus.gatewayTimeout:
+      return ApiException(
+        httpCode: statusCode,
+        status: status ?? "",
+        message:
+            "Service is temporarily unavailable. Please try again in a few minutes.",
+      );
     default:
       return ApiException(
-          httpCode: statusCode,
-          status: status ?? "",
-          message: serverMessage ?? "");
+        httpCode: statusCode,
+        status: status ?? "",
+        message:
+            serverMessage ?? "Something went wrong. Please try again later.",
+      );
   }
 }

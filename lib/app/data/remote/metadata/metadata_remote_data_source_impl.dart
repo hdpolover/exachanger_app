@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:exachanger_get_app/app/core/utils/circuit_breaker.dart';
 import 'package:exachanger_get_app/app/core/values/app_endpoints.dart';
 import 'package:exachanger_get_app/app/data/models/api_response_model.dart';
 import 'package:exachanger_get_app/app/data/models/metadata_model.dart';
@@ -37,23 +38,29 @@ class MetadataRemoteDataSourceImpl extends BaseRemoteSource
   // }
 
   MetaDataModel _parseData(Response<dynamic> response) {
-    ApiResponseModel apiResponseModel =
-        ApiResponseModel.fromJson(response.data);
+    ApiResponseModel apiResponseModel = ApiResponseModel.fromJson(
+      response.data,
+    );
 
     return MetaDataModel.fromJson(apiResponseModel.data);
   }
 
   @override
   Future<MetaDataModel> getPageData(String page) {
-    var endpoint =
-        "${DioProvider.baseUrl}/${AppEndpoints.metadata}?page=$page&type=1";
-    var dioCall = dioClient.get(endpoint);
+    final circuitBreaker = CircuitBreakers.getBreaker('metadata');
 
-    try {
-      return callApiWithErrorParser(dioCall)
-          .then((response) => _parseData(response));
-    } catch (e) {
-      rethrow;
-    }
+    return circuitBreaker.execute(() async {
+      var endpoint =
+          "${DioProvider.baseUrl}/${AppEndpoints.metadata}?page=$page&type=1";
+      var dioCall = dioClient.get(endpoint);
+
+      try {
+        return callApiWithErrorParser(
+          dioCall,
+        ).then((response) => _parseData(response));
+      } catch (e) {
+        rethrow;
+      }
+    });
   }
 }

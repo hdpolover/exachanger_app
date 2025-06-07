@@ -21,6 +21,7 @@ abstract class Routes {
   static const CONFIRM_EXCHANGE = _Paths.CONFIRM_EXCHANGE;
   static const HOME_MORE = _Paths.HOME_MORE;
   static const NOTIFICATION = _Paths.NOTIFICATION;
+  static const SERVER_ERROR = _Paths.SERVER_ERROR;
 }
 
 abstract class _Paths {
@@ -43,4 +44,5 @@ abstract class _Paths {
   static const CONFIRM_EXCHANGE = '/exchange/confirm';
   static const HOME_MORE = '/home-more';
   static const NOTIFICATION = '/notification';
+  static const SERVER_ERROR = '/server-error';
 }

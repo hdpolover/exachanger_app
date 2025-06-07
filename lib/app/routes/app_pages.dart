@@ -21,6 +21,8 @@ import '../modules/profile/bindings/profile_binding.dart';
 import '../modules/profile/views/pages/profile_view.dart';
 import '../modules/promo/bindings/promo_binding.dart';
 import '../modules/promo/views/promo_view.dart';
+import '../modules/server_error/views/server_error_page_clean.dart';
+import '../modules/server_error/controllers/server_error_controller.dart';
 
 import '../modules/rate/bindings/rate_binding.dart';
 import '../modules/rate/views/rate_view.dart';
@@ -116,6 +118,13 @@ class AppPages {
       name: _Paths.NOTIFICATION,
       page: () => NotificationView(),
       binding: HomeBinding(),
+    ),
+    GetPage(
+      name: _Paths.SERVER_ERROR,
+      page: () => const ServerErrorPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<ServerErrorController>(() => ServerErrorController());
+      }),
     ),
   ];
 }

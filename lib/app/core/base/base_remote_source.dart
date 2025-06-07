@@ -3,6 +3,8 @@ import 'package:get/get.dart' hide Response;
 import 'package:get/get_connect/http/src/status/http_status.dart';
 
 import '/app/core/base/base_controller.dart';
+import '/app/core/utils/error_message_utils.dart';
+import '/app/services/critical_error_service.dart';
 import '/app/network/dio_provider.dart';
 import '/app/network/error_handlers.dart';
 import '/app/network/exceptions/base_exception.dart';
@@ -27,16 +29,42 @@ abstract class BaseRemoteSource {
       return response;
     } on DioException catch (dioError) {
       Exception exception = handleDioError(dioError);
-      logger.e(
-        "Throwing error from repository: >>>>>>> $exception : ${(exception as BaseException).message}",
+
+      // Get endpoint from request for better error context
+      String? endpoint = dioError.requestOptions.path;
+
+      // Log with better context
+      String userFriendlyMessage = ErrorMessageUtils.getUserFriendlyMessage(
+        exception,
+        endpoint: endpoint,
       );
+
+      logger.e(
+        "API Error for endpoint '$endpoint' - User message: $userFriendlyMessage - Technical: $exception",
+      );
+
+      // Check if this should trigger server error page
+      if (Get.isRegistered<CriticalErrorService>()) {
+        final criticalErrorService = Get.find<CriticalErrorService>();
+
+        if (criticalErrorService.shouldShowServerErrorPage(
+          exception,
+          endpoint,
+        )) {
+          criticalErrorService.showServerErrorPage(exception, endpoint);
+          // This line won't be reached due to navigation, but satisfies the return type
+          throw exception;
+        }
+      }
 
       // Show snackbar for network errors if a controller is available
       if (exception is NetworkException) {
         try {
           if (Get.isRegistered<BaseController>()) {
             BaseController controller = Get.find<BaseController>();
-            controller.showNetworkErrorSnackbar();
+            controller.showNetworkErrorSnackbar(
+              customMessage: userFriendlyMessage,
+            );
           }
         } catch (e) {
           logger.e("Error showing network error snackbar: $e");

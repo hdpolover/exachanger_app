@@ -19,20 +19,42 @@ import '../../../core/base/base_controller.dart';
 import '../../../routes/app_pages.dart';
 
 class SplashController extends BaseController {
-  final PromoRepository promoRepository =
-      Get.find(tag: (PromoRepository).toString());
+  final PromoRepository promoRepository = Get.find(
+    tag: (PromoRepository).toString(),
+  );
 
-  final BlogRepository blogRepository =
-      Get.find(tag: (BlogRepository).toString());
+  final BlogRepository blogRepository = Get.find(
+    tag: (BlogRepository).toString(),
+  );
 
-  final TransactionRepository transactionRepository =
-      Get.find(tag: (TransactionRepository).toString());
+  final TransactionRepository transactionRepository = Get.find(
+    tag: (TransactionRepository).toString(),
+  );
 
-  final ProductRepository productRepository =
-      Get.find(tag: (ProductRepository).toString());
+  final ProductRepository productRepository = Get.find(
+    tag: (ProductRepository).toString(),
+  );
 
-  final AuthRemoteDataSource authRemoteDataSource =
-      Get.find(tag: (AuthRemoteDataSource).toString());
+  // Use lazy initialization for critical dependencies that might be missing after error flows
+  AuthRemoteDataSource? _authRemoteDataSource;
+  AuthRemoteDataSource get authRemoteDataSource {
+    if (_authRemoteDataSource == null) {
+      try {
+        _authRemoteDataSource = Get.find(
+          tag: (AuthRemoteDataSource).toString(),
+        );
+      } catch (e) {
+        print(
+          '🔧 SPLASH: AuthRemoteDataSource not found, this should have been handled by SplashBinding: $e',
+        );
+        throw Exception(
+          'Critical dependency AuthRemoteDataSource is missing. Please restart the app.',
+        );
+      }
+    }
+    return _authRemoteDataSource!;
+  }
+
   final PreferenceManagerImpl preferenceManager =
       Get.find<PreferenceManagerImpl>();
 
@@ -100,8 +122,9 @@ class SplashController extends BaseController {
           try {
             statusText.value = "Refreshing token...";
             // Try to refresh token
-            final newAccessToken =
-                await authRemoteDataSource.refreshToken(refreshToken);
+            final newAccessToken = await authRemoteDataSource.refreshToken(
+              refreshToken,
+            );
 
             // Store new token
             await preferenceManager.setString("access_token", newAccessToken);
@@ -250,7 +273,8 @@ class SplashController extends BaseController {
     print("Transactions count: ${transactionList.value.length}");
     print("Products count: ${productList.value.length}");
     print(
-        "User data: ${userData.value != null ? 'Loaded (${userData.value!.name})' : 'Not loaded'}");
+      "User data: ${userData.value != null ? 'Loaded (${userData.value!.name})' : 'Not loaded'}",
+    );
   }
 
   @override

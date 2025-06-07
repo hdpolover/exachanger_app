@@ -139,6 +139,42 @@ abstract class BaseController extends GetxController {
       showErrorMessage(exception.message);
     } on ApiException catch (exception) {
       ex = exception;
+
+      // Handle server errors more gracefully
+      if (exception.httpCode >= 500 && exception.httpCode < 600) {
+        // Server error - show user-friendly message
+        showErrorMessage(
+          "The server is currently experiencing issues. Please try again later.",
+        );
+
+        // Show snackbar for server errors
+        Get.snackbar(
+          'Server Error',
+          'The service is temporarily unavailable. Please try again in a few minutes.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: Duration(seconds: 4),
+          icon: Icon(Icons.warning, color: Colors.white),
+          isDismissible: true,
+          borderRadius: 8,
+          margin: EdgeInsets.all(8),
+        );
+      } else if (exception.httpCode >= 400 && exception.httpCode < 500) {
+        // Client error - show specific message
+        showErrorMessage(
+          exception.message.isNotEmpty
+              ? exception.message
+              : "Invalid request. Please check your input.",
+        );
+      } else {
+        // Other API errors
+        showErrorMessage(
+          exception.message.isNotEmpty
+              ? exception.message
+              : "Something went wrong. Please try again.",
+        );
+      }
     } on AppException catch (exception) {
       ex = exception;
       showErrorMessage(exception.message);

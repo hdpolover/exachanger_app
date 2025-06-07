@@ -20,43 +20,90 @@ import '/app/data/repository/github_repository_impl.dart';
 class RepositoryBindings implements Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<GithubRepository>(
-      () => GithubRepositoryImpl(),
+    print('🔧 REPOSITORY BINDINGS: Initializing repositories...');
+
+    // Use fenix: true and check registration to avoid conflicts
+
+    if (!Get.isRegistered<GithubRepository>(
       tag: (GithubRepository).toString(),
-    );
-    Get.lazyPut<MetadataRepository>(
-      () => MetadataRepositoryImpl(),
+    )) {
+      Get.lazyPut<GithubRepository>(
+        () => GithubRepositoryImpl(),
+        tag: (GithubRepository).toString(),
+        fenix: true,
+      );
+    }
+
+    if (!Get.isRegistered<MetadataRepository>(
       tag: (MetadataRepository).toString(),
-    );
+    )) {
+      Get.lazyPut<MetadataRepository>(
+        () => MetadataRepositoryImpl(),
+        tag: (MetadataRepository).toString(),
+        fenix: true,
+      );
+    }
+
     // auth
-    Get.lazyPut<AuthRepository>(
-      () => AuthRepositoryImpl(),
-      tag: (AuthRepository).toString(),
-    );
+    if (!Get.isRegistered<AuthRepository>(tag: (AuthRepository).toString())) {
+      Get.lazyPut<AuthRepository>(
+        () => AuthRepositoryImpl(),
+        tag: (AuthRepository).toString(),
+        fenix: true,
+      );
+    }
+
     // promo
-    Get.lazyPut<PromoRepository>(
-      () => PromoRepositoryImpl(),
-      tag: (PromoRepository).toString(),
-    );
+    if (!Get.isRegistered<PromoRepository>(tag: (PromoRepository).toString())) {
+      Get.lazyPut<PromoRepository>(
+        () => PromoRepositoryImpl(),
+        tag: (PromoRepository).toString(),
+        fenix: true,
+      );
+    }
+
     // blog repository
-    Get.lazyPut<BlogRepository>(
-      () => BlogRepositoryImpl(),
-      tag: (BlogRepository).toString(),
-    );
+    if (!Get.isRegistered<BlogRepository>(tag: (BlogRepository).toString())) {
+      Get.lazyPut<BlogRepository>(
+        () => BlogRepositoryImpl(),
+        tag: (BlogRepository).toString(),
+        fenix: true,
+      );
+    }
+
     // transaction repository
-    Get.lazyPut<TransactionRepository>(
-      () => TransactionRepositoryImpl(),
+    if (!Get.isRegistered<TransactionRepository>(
       tag: (TransactionRepository).toString(),
-    );
+    )) {
+      Get.lazyPut<TransactionRepository>(
+        () => TransactionRepositoryImpl(),
+        tag: (TransactionRepository).toString(),
+        fenix: true,
+      );
+    }
+
     // product repository
-    Get.lazyPut<ProductRepository>(
-      () => ProductRepositoryImpl(),
+    if (!Get.isRegistered<ProductRepository>(
       tag: (ProductRepository).toString(),
-    );
+    )) {
+      Get.lazyPut<ProductRepository>(
+        () => ProductRepositoryImpl(),
+        tag: (ProductRepository).toString(),
+        fenix: true,
+      );
+    }
+
     // notification repository
-    Get.lazyPut<NotificationRepository>(
-      () => NotificationRepositoryImpl(),
+    if (!Get.isRegistered<NotificationRepository>(
       tag: (NotificationRepository).toString(),
-    );
+    )) {
+      Get.lazyPut<NotificationRepository>(
+        () => NotificationRepositoryImpl(),
+        tag: (NotificationRepository).toString(),
+        fenix: true,
+      );
+    }
+
+    print('🔧 REPOSITORY BINDINGS: All repositories initialized');
   }
 }

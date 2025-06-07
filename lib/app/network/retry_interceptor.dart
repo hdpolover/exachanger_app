@@ -33,14 +33,16 @@ class RetryInterceptor extends dio.Interceptor {
       if (_connectivityService != null &&
           !_connectivityService.isConnected.value) {
         await _waitForConnectivity();
-      }
-
-      // Add delay before retry
-      await Future.delayed(
-        Duration(
-          milliseconds: (retryDelay.inMilliseconds * (retryCount + 1)).round(),
-        ),
+      } // Add exponential backoff delay before retry
+      final delay = Duration(
+        milliseconds:
+            (retryDelay.inMilliseconds *
+                    (retryCount == 0 ? 1 : (retryCount * 2)))
+                .round(),
       );
+
+      print('Waiting ${delay.inMilliseconds}ms before retry...');
+      await Future.delayed(delay);
 
       // Increment retry count
       err.requestOptions.extra['retryCount'] = retryCount + 1;
