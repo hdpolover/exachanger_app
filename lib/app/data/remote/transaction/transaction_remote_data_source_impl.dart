@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:path/path.dart' as path;
+import 'package:http_parser/http_parser.dart';
 import '../../../core/base/base_remote_source.dart';
 import '../../../core/values/app_endpoints.dart';
 import '../../models/transaction_model.dart';
@@ -91,11 +93,18 @@ class TransactionRemoteDataSourceImpl extends BaseRemoteSource
         if (blockchainAddress != null) 'blockchain_address': blockchainAddress,
         if (note != null) 'note': note,
       };
-
       final dioCall = dioClient.post(AppEndpoints.transactions, data: data);
       return callApiWithErrorParser(dioCall).then((response) {
         if (response.data != null) {
-          return TransactionModel.fromJson(response.data);
+          // Handle the nested response structure from the API
+          final responseData = response.data;
+          if (responseData is Map<String, dynamic> &&
+              responseData.containsKey('data')) {
+            return TransactionModel.fromJson(responseData['data']);
+          } else {
+            // Fallback for direct transaction data
+            return TransactionModel.fromJson(responseData);
+          }
         }
         throw Exception('Failed to create transaction');
       });
@@ -122,13 +131,37 @@ class TransactionRemoteDataSourceImpl extends BaseRemoteSource
     required File proofFile,
   }) async {
     try {
+      // Extract file extension using path package for better reliability
+      String fileExtension = path.extension(proofFile.path).toLowerCase();
+      if (fileExtension.startsWith('.')) {
+        fileExtension = fileExtension.substring(1); // Remove the dot
+      }
+
+      // Validate file extension - only allow supported formats
+      List<String> supportedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+      if (!supportedExtensions.contains(fileExtension)) {
+        // Default to jpg if unsupported extension
+        fileExtension = 'jpg';
+      }
+
+      String finalFileName =
+          'payment_proof_${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
+
+      // Debug information
+      print('🔍 Upload Debug Info:');
+      print('📁 Original file path: ${proofFile.path}');
+      print('📄 Original file name: ${path.basename(proofFile.path)}');
+      print('🔖 Detected extension: $fileExtension');
+      print('📝 Final filename: $finalFileName');
+      print('✅ File exists: ${await proofFile.exists()}');
+      print('📊 File size: ${await proofFile.length()} bytes');
       // Create form data with file and transaction ID
       FormData formData = FormData.fromMap({
         'transaction_id': transactionId,
         'file': await MultipartFile.fromFile(
           proofFile.path,
-          filename:
-              'payment_proof_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          filename: finalFileName,
+          contentType: _getContentType(fileExtension),
         ),
       });
 
@@ -142,6 +175,21 @@ class TransactionRemoteDataSourceImpl extends BaseRemoteSource
       });
     } catch (e) {
       rethrow;
+    }
+  }
+
+  // Helper method to get content type based on file extension
+  MediaType _getContentType(String fileExtension) {
+    switch (fileExtension.toLowerCase()) {
+      case 'jpg':
+      case 'jpeg':
+        return MediaType('image', 'jpeg');
+      case 'png':
+        return MediaType('image', 'png');
+      case 'webp':
+        return MediaType('image', 'webp');
+      default:
+        return MediaType('image', 'jpeg'); // Default fallback
     }
   }
 }

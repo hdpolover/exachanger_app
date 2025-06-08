@@ -37,86 +37,125 @@ class ConfirmExchangeView extends BaseView<ExchangeController> {
 
   Future<void> _handleBackPressed(BuildContext context) async {
     final args = Get.arguments as Map<String, dynamic>?;
-    final transaction =
-        args?['transaction']
-            as TransactionModel?; // Always show confirmation dialog, regardless of transaction ID
+    final transaction = args?['transaction'] as TransactionModel?;
+    // Always show confirmation dialog, regardless of transaction ID
     // Users should be warned before leaving this confirmation page
     final result = await Get.dialog<bool>(
       AlertDialog(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Container(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.warning_amber_rounded,
-                  color: Colors.orange,
-                  size: 24,
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Cancel Transaction?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: EdgeInsets.zero,
         content: Container(
           width: double.maxFinite,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.red.shade50, Colors.white],
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header with icon and title
               Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.2)),
-                ),
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(24, 32, 24, 16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'If you leave this page, the following will happen:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.red.shade700,
-                        fontSize: 14,
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.cancel_outlined,
+                        color: Colors.red.shade600,
+                        size: 40,
                       ),
                     ),
-                    SizedBox(height: 12),
-                    _buildWarningItem(
-                      'The current transaction will be permanently canceled',
+                    SizedBox(height: 16),
+                    Text(
+                      'Cancel Transaction?',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                     SizedBox(height: 8),
-                    _buildWarningItem(
-                      'You will need to start a new exchange from the beginning',
+                    Text(
+                      'You\'re about to cancel your exchange',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
-                    SizedBox(height: 8),
-                    _buildWarningItem('This action cannot be undone'),
                   ],
                 ),
               ),
-              SizedBox(height: 20),
-              Center(
+
+              // Warning content
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.red.shade200, width: 1),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.red.shade600,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'What happens when you cancel:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red.shade700,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      _buildWarningItem(
+                        'Your transaction will be permanently deleted',
+                        Icons.delete_forever_outlined,
+                      ),
+                      SizedBox(height: 12),
+                      _buildWarningItem(
+                        'You\'ll need to start a new exchange from scratch',
+                        Icons.restart_alt_outlined,
+                      ),
+                      SizedBox(height: 12),
+                      _buildWarningItem(
+                        'This action cannot be undone',
+                        Icons.warning_amber_outlined,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Message
+              Container(
+                padding: EdgeInsets.all(24),
                 child: Text(
-                  'Are you sure you want to continue?',
+                  'Are you sure you want to cancel this transaction?',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -124,65 +163,86 @@ class ConfirmExchangeView extends BaseView<ExchangeController> {
                   ),
                 ),
               ),
+
+              // Action buttons
+              Container(
+                padding: EdgeInsets.fromLTRB(24, 0, 24, 32),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 52,
+                        child: OutlinedButton(
+                          onPressed: () => Get.back(result: false),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            side: BorderSide(
+                              color: Theme.of(Get.context!).primaryColor,
+                              width: 2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.arrow_back_ios,
+                                size: 16,
+                                color: Theme.of(Get.context!).primaryColor,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Go Back',
+                                style: TextStyle(
+                                  color: Theme.of(Get.context!).primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Container(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: () => Get.back(result: true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade600,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.cancel_outlined, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Yes, Cancel',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        actionsPadding: EdgeInsets.fromLTRB(24, 0, 24, 24),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: () => Get.back(result: false),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      side: BorderSide(
-                        color: Theme.of(Get.context!).primaryColor,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Stay & Continue',
-                      style: TextStyle(
-                        color: Theme.of(Get.context!).primaryColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () => Get.back(result: true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Yes, Cancel Transaction',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
 
@@ -320,7 +380,6 @@ class ConfirmExchangeView extends BaseView<ExchangeController> {
       ),
       backgroundColor: Colors.transparent,
     );
-
     if (result != null) {
       try {
         final XFile? pickedFile = await _picker.pickImage(
@@ -329,10 +388,39 @@ class ConfirmExchangeView extends BaseView<ExchangeController> {
           maxHeight: 800,
           imageQuality: 80,
         );
-
         if (pickedFile != null) {
+          // Enhanced file validation
+          String filePath = pickedFile.path;
+          String fileName = filePath.split('/').last;
+          String fileExtension = '';
+
+          if (fileName.contains('.')) {
+            fileExtension = fileName.split('.').last.toLowerCase();
+          }
+
+          List<String> supportedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+          print('🔍 Image Selection Debug:');
+          print('📁 File path: $filePath');
+          print('📄 File name: $fileName');
+          print('🔖 Extension: $fileExtension');
+          print('✅ Is valid: ${supportedExtensions.contains(fileExtension)}');
+
+          if (!supportedExtensions.contains(fileExtension)) {
+            Get.snackbar(
+              'Invalid File Type',
+              'Please select a valid image file (JPG, PNG, JPEG, or WebP)',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return;
+          }
+
           _proofImage.value = File(pickedFile.path);
           _isProofUploaded.value = true;
+
+          print('✅ Image selected successfully: $fileName');
         }
       } catch (e) {
         print('Error picking image: $e');
@@ -368,10 +456,8 @@ Send: \$ ${amountSent.toStringAsFixed(2)}
 Fee: \$ ${fee.toStringAsFixed(2)}
 Receive: \$ ${amountReceive.toStringAsFixed(2)}
 
-Thank you''';
-
-    // Replace with your admin's phone number (including country code without +)
-    final phoneNumber = '1234567890'; // Replace with actual admin number
+Thank you'''; // Admin's phone number (including country code without +)
+    final phoneNumber = '6281234216445'; // Admin number: +62 812-3421-6445
     final encodedMessage = Uri.encodeComponent(message);
     final whatsappUrl = 'https://wa.me/$phoneNumber?text=$encodedMessage';
 
@@ -980,7 +1066,7 @@ Thank you''';
                             ),
                             SizedBox(height: 8),
                             Text(
-                              'Click to upload or drag and drop',
+                              'Tap to upload',
                               style: TextStyle(
                                 color: Colors.grey.shade700,
                                 fontWeight: FontWeight.w500,
@@ -988,7 +1074,7 @@ Thank you''';
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'SVG, PNG, JPG or GIF (MAX. 800x400px)',
+                              'JPG, PNG, JPEG or WebP (MAX. 800x800px)',
                               style: TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
@@ -1002,7 +1088,9 @@ Thank you''';
             SizedBox(height: 24), // Confirm Payment Button
             Obx(
               () => CustomButton(
-                label: 'Confirm Payment',
+                label: _isProofUploaded.value
+                    ? 'Confirm Payment'
+                    : 'Upload Payment Proof First',
                 onPressed: _isProofUploaded.value
                     ? () {
                         _confirmPayment(
@@ -1014,7 +1102,15 @@ Thank you''';
                           receiveAmount: receiveAmount,
                         );
                       }
-                    : () {}, // Disable button if proof is not uploaded
+                    : () {
+                        Get.snackbar(
+                          'Upload Required',
+                          'Please upload your payment proof before confirming',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.orange,
+                          colorText: Colors.white,
+                        );
+                      },
               ),
             ),
 
@@ -1416,27 +1512,27 @@ Thank you''';
     return 'Payment info';
   }
 
-  Widget _buildWarningItem(String text) {
+  Widget _buildWarningItem(String text, [IconData? icon]) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           margin: EdgeInsets.only(top: 2),
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(
+          child: Icon(
+            icon ?? Icons.circle,
             color: Colors.red.shade600,
-            shape: BoxShape.circle,
+            size: icon != null ? 20 : 6,
           ),
         ),
-        SizedBox(width: 8),
+        SizedBox(width: 12),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               color: Colors.red.shade700,
-              fontSize: 14,
+              fontSize: 15,
               height: 1.4,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

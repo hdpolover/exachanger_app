@@ -86,15 +86,33 @@ class HomeController extends BaseController {
   final PreferenceManagerImpl preferenceManager =
       Get.find<PreferenceManagerImpl>();
   final Rx<UserModel?> userData = Rx<UserModel?>(null);
+
   // Data loading state
   final RxBool isLoading = false.obs;
   final RxString error = "".obs;
+
   // Refresh controller for pull-to-refresh
   RefreshController? _refreshController;
 
   RefreshController get refreshController {
-    _refreshController ??= RefreshController(initialRefresh: false);
+    // Dispose the old controller if it exists to prevent binding conflicts
+    if (_refreshController != null) {
+      _refreshController!.dispose();
+    }
+    _refreshController = RefreshController(initialRefresh: false);
     return _refreshController!;
+  }
+
+  // Separate refresh controller for more view
+  RefreshController? _moreRefreshController;
+
+  RefreshController get moreRefreshController {
+    // Dispose the old controller if it exists to prevent binding conflicts
+    if (_moreRefreshController != null) {
+      _moreRefreshController!.dispose();
+    }
+    _moreRefreshController = RefreshController(initialRefresh: false);
+    return _moreRefreshController!;
   }
 
   // Load user data
@@ -695,6 +713,7 @@ class HomeController extends BaseController {
   @override
   void onClose() {
     _refreshController?.dispose();
+    _moreRefreshController?.dispose();
     _notificationRefreshController?.dispose();
     super.onClose();
   }
@@ -709,6 +728,19 @@ class HomeController extends BaseController {
     } catch (error) {
       print("DEBUG - Refresh failed: $error");
       refreshController.refreshFailed();
+    }
+  }
+
+  // Method for pull-to-refresh in more view
+  Future<void> onMoreRefresh() async {
+    print("DEBUG - More view pull to refresh triggered!");
+    try {
+      await refreshData();
+      print("DEBUG - More view refresh completed successfully");
+      moreRefreshController.refreshCompleted();
+    } catch (error) {
+      print("DEBUG - More view refresh failed: $error");
+      moreRefreshController.refreshFailed();
     }
   }
 

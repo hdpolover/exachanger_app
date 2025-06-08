@@ -20,10 +20,10 @@ class SignInView extends BaseView<SignInController> {
   final TextEditingController passwordController = TextEditingController();
 
   void _submit() async {
-    // set email form
-    emailController.text = "mahendradwipurwanto@gmail.com";
-    // set password form
-    passwordController.text = "Qawsedrf123!@#";
+    // // set email form
+    // emailController.text = "mahendradwipurwanto@gmail.com";
+    // // set password form
+    // passwordController.text = "Qawsedrf123!@#";
 
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();

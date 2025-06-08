@@ -110,10 +110,9 @@ class HomeMoreView extends BaseView<HomeController> {
           ),
         );
       }
-
       return SmartRefresher(
-        controller: controller.refreshController,
-        onRefresh: controller.onRefresh,
+        controller: controller.moreRefreshController,
+        onRefresh: controller.onMoreRefresh,
         enablePullDown: true,
         enablePullUp: false,
         physics: const BouncingScrollPhysics(),

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
+import 'package:exachanger_get_app/app/core/utils/error_message_utils.dart';
 import 'package:exachanger_get_app/app/data/models/product_model.dart';
 import 'package:exachanger_get_app/app/data/models/rate_model.dart';
 import 'package:exachanger_get_app/app/data/models/blockchain_model.dart';
@@ -262,14 +263,19 @@ class ExchangeController extends BaseController {
       return transaction;
     } catch (e) {
       isCreatingTransaction.value = false;
-      transactionError.value = 'Failed to create transaction: ${e.toString()}';
+
+      // Use ErrorMessageUtils to get user-friendly error messages
+      String userFriendlyMessage = ErrorMessageUtils.getUserFriendlyMessage(
+        e,
+        endpoint: '/transaction',
+        context: 'transaction creation',
+      );
+
+      transactionError.value = userFriendlyMessage;
 
       // Show network error snackbar if it's a connectivity issue
       if (isNetworkError(e)) {
-        showNetworkErrorSnackbar(
-          customMessage:
-              'Failed to create transaction. Please check your internet connection and try again.',
-        );
+        showNetworkErrorSnackbar(customMessage: userFriendlyMessage);
       }
 
       return null;
@@ -333,9 +339,27 @@ class ExchangeController extends BaseController {
       }
     } catch (e) {
       print('Error uploading payment proof: $e');
+
+      // Provide more specific error messages based on the error type
+      String errorMessage = 'Failed to upload payment proof';
+
+      if (e.toString().contains('Invalid file type') ||
+          e.toString().contains('file type') ||
+          e.toString().contains('format')) {
+        errorMessage =
+            'Invalid file type. Please select a JPG, PNG, JPEG, or WebP image.';
+      } else if (e.toString().contains('network') ||
+          e.toString().contains('connection')) {
+        errorMessage =
+            'Network error. Please check your connection and try again.';
+      } else if (e.toString().contains('size') ||
+          e.toString().contains('large')) {
+        errorMessage = 'File is too large. Please select a smaller image.';
+      }
+
       Get.snackbar(
         'Error',
-        'Failed to upload payment proof: ${e.toString()}',
+        errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,

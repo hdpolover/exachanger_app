@@ -40,7 +40,7 @@ abstract class BaseRemoteSource {
       );
 
       logger.e(
-        "API Error for endpoint '$endpoint' - User message: $userFriendlyMessage - Technical: $exception",
+        "API Error for endpoint '$endpoint' - User message: $userFriendlyMessage - Technical details: HTTP ${(exception as dynamic).httpCode ?? 'unknown'} - ${(exception as dynamic).message ?? exception.runtimeType}",
       );
 
       // Check if this should trigger server error page
