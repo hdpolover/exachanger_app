@@ -28,7 +28,7 @@ class NotificationView extends BaseView<HomeController> {
     // Load notifications when view is opened
     if (controller.notifications.isEmpty &&
         !controller.isLoadingNotifications.value) {
-      controller.fetchNotifications();
+      controller.loadNotifications();
     }
 
     return Column(
@@ -82,8 +82,7 @@ class NotificationView extends BaseView<HomeController> {
                       ),
                     SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () =>
-                          controller.fetchNotifications(refresh: true),
+                      onPressed: () => controller.loadNotifications(),
                       child: Text('Retry'),
                     ),
                   ],

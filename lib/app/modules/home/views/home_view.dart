@@ -331,32 +331,40 @@ class HomeView extends BaseView<HomeController> {
 
   @override
   Widget body(BuildContext context) {
-    return Obx(
-      () => SmartRefresher(
-        key: const ValueKey('home_smart_refresher'),
-        controller: controller.refreshController,
-        onRefresh: controller.onRefresh,
-        enablePullDown: true,
-        enablePullUp: false,
-        physics: const BouncingScrollPhysics(),
-        header: WaterDropMaterialHeader(
-          backgroundColor: AppColors.colorPrimary,
-          color: Colors.white,
-          distance: 40.0,
-        ),
-        child: ListView(
-          children: [
-            _topSection(),
-            _exchangeSection(),
-            // Show the transaction section when loading or if there are transactions
-            if (controller.isLoading.value ||
-                controller.transactions.isNotEmpty)
-              _transactionSection(),
-            _whatsnewSection(),
-            _newsSection(),
-          ],
-        ),
-      ),
+    return GetBuilder<HomeController>(
+      builder: (controller) {
+        if (controller.isClosed) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return Obx(
+          () => SmartRefresher(
+            key: const ValueKey('home_smart_refresher'),
+            controller: controller.refreshController,
+            onRefresh: controller.onRefresh,
+            enablePullDown: true,
+            enablePullUp: false,
+            physics: const BouncingScrollPhysics(),
+            header: WaterDropMaterialHeader(
+              backgroundColor: AppColors.colorPrimary,
+              color: Colors.white,
+              distance: 40.0,
+            ),
+            child: ListView(
+              children: [
+                _topSection(),
+                _exchangeSection(),
+                // Show the transaction section when loading or if there are transactions
+                if (controller.isLoading.value ||
+                    controller.transactions.isNotEmpty)
+                  _transactionSection(),
+                _whatsnewSection(),
+                _newsSection(),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -484,7 +492,7 @@ class HomeView extends BaseView<HomeController> {
                         ),
                         SizedBox(height: 10),
                         TextButton(
-                          onPressed: controller.refreshData,
+                          onPressed: controller.refreshAll,
                           child: Text('Retry'),
                         ),
                       ],

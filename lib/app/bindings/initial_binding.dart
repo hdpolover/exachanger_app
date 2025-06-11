@@ -1,6 +1,7 @@
 import 'package:exachanger_get_app/app/services/connectivity_service.dart';
 import 'package:exachanger_get_app/app/services/critical_error_service.dart';
 import 'package:exachanger_get_app/app/services/data_service.dart';
+import 'package:exachanger_get_app/app/services/auth_service.dart';
 import 'package:get/get.dart';
 
 import 'local_source_bindings.dart';
@@ -23,6 +24,9 @@ class InitialBinding implements Bindings {
     // Initialize DataService as a persistent service
     // Using put instead of putAsync to ensure the service is immediately available
     Get.put<DataService>(DataService(), permanent: true);
+
+    // Initialize AuthService for managing authentication state
+    Get.put<AuthService>(AuthService(), permanent: true);
 
     // Initialize the service after it's registered
     Get.find<DataService>().init();
@@ -49,6 +53,10 @@ class InitialBinding implements Bindings {
       if (!Get.isRegistered<DataService>()) {
         Get.put<DataService>(DataService(), permanent: true);
         Get.find<DataService>().init();
+      }
+
+      if (!Get.isRegistered<AuthService>()) {
+        Get.put<AuthService>(AuthService(), permanent: true);
       }
 
       print('🔧 INITIAL BINDING: Dependencies re-initialized successfully');

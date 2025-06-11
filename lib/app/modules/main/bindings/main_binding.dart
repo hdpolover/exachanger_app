@@ -22,8 +22,8 @@ class MainBinding extends Bindings {
     );
 
     // Register controllers for nested views
-    Get.put<HomeController>(HomeController(), permanent: true);
-    Get.put<HistoryController>(HistoryController(), permanent: true);
+    Get.lazyPut<HomeController>(() => HomeController(), fenix: true);
+    Get.lazyPut<HistoryController>(() => HistoryController(), fenix: true);
     Get.lazyPut<RateController>(() => RateController());
     Get.lazyPut<ProfileController>(() => ProfileController());
     // Use lazyPut for ExchangeController to ensure fresh instance when needed

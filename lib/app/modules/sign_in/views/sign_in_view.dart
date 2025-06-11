@@ -1,7 +1,9 @@
 import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/widgets/custom_loading_dialog.dart';
+import 'package:exachanger_get_app/app/core/widgets/forgot_password_dialog.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
@@ -54,44 +56,59 @@ class SignInView extends BaseView<SignInController> {
 
   @override
   PreferredSizeWidget appBar(BuildContext context) {
-    return AppBar(centerTitle: true);
+    return AppBar(
+      centerTitle: true,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+    );
   }
 
   @override
   Widget body(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 8,
-        children: [
-          Text('Welcome Back!', style: titleTextStyle),
-          Text('Sign in to continue', style: regularBodyTextStyle),
-          _signInForm(),
-          Spacer(),
-          Align(
-            alignment: Alignment.bottomCenter, // align bottom
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Don\'t have an account? ', style: regularBodyTextStyle),
-                InkWell(
-                  onTap: () {
-                    Get.offAndToNamed(Routes.SIGN_UP);
-                  },
-                  child: Text(
-                    'Sign Up',
-                    style: regularBodyTextStyle.copyWith(
-                      color: AppColors.colorPrimary,
-                      fontWeight: FontWeight.bold,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: AppValues.padding),
+                    Text('Welcome Back!', style: titleTextStyle),
+                    SizedBox(height: 8),
+                    Text('Sign in to continue', style: regularBodyTextStyle),
+                    SizedBox(height: 16),
+                    _signInForm(),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: AppValues.largePadding),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Don\'t have an account? ', style: regularBodyTextStyle),
+                  InkWell(
+                    onTap: () {
+                      Get.offAndToNamed(Routes.SIGN_UP);
+                    },
+                    child: Text(
+                      'Sign Up',
+                      style: regularBodyTextStyle.copyWith(
+                        color: AppColors.colorPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: AppValues.largePadding),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -101,7 +118,6 @@ class SignInView extends BaseView<SignInController> {
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 16,
         children: [
           SizedBox(height: AppValues.halfPadding),
           CustomTextFormField(
@@ -121,6 +137,7 @@ class SignInView extends BaseView<SignInController> {
             },
             onChanged: (value) {}, // Email validation handled by validator
           ),
+          SizedBox(height: 16),
           CustomTextFormField(
             controller: passwordController,
             labelText: 'Password',
@@ -138,53 +155,62 @@ class SignInView extends BaseView<SignInController> {
             },
             onChanged: (value) {}, // Password validation handled by validator
           ),
+          SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                Get.dialog(ForgotPasswordDialog());
+              },
               child: Text(
                 'Forgot Password?',
                 style: regularBodyTextStyle.copyWith(color: Colors.red),
               ),
             ),
           ),
+          SizedBox(height: 24),
           CustomButton(label: "Sign In", onPressed: _submit),
+          SizedBox(height: 16),
           Center(
             child: Text(
               'or',
               style: regularBodyTextStyle.copyWith(color: Colors.grey),
             ),
           ),
+          SizedBox(height: 16),
           CustomOutlinedButton(
-            label: "Google",
+            label: "Sign in with Google",
+            icon: Image.asset(
+              AppImages.googleLogo,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
+            ),
             onPressed: () async {
               // Show loading with custom animated dialog for Google sign in
               Get.dialog(
                 CustomLoadingDialog(
-                  message: 'Connecting with Google...',
+                  message:
+                      'Signing in with Google...\nChecking your account...',
                   backgroundColor: Colors.white,
                   textColor: Colors.black87,
                 ),
                 barrierDismissible: false,
               );
 
-              // Add a delay to show the loading animation
-              await Future.delayed(Duration(milliseconds: 800));
+              // Prepare Google sign-in data - this will use Firebase + API /auth/sign-up endpoint
+              Map<String, dynamic> data = {
+                'email': '', // Will be filled by Firebase
+                'password': '', // Not needed for Google sign-in
+                'device_token': 'device_token_google',
+                'type': 1, // 1 for Google sign-in
+              };
 
-              // Close the dialog (for now, since Google sign-in isn't implemented)
-              Get.back();
-
-              // Show a message that Google sign-in is coming soon
-              Get.snackbar(
-                'Coming Soon',
-                'Google Sign-In will be available in the next update!',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.blue,
-                colorText: Colors.white,
-                duration: Duration(seconds: 2),
-              );
+              // Call the controller to handle Google sign-in
+              controller.doSignIn(data);
             },
           ),
+          SizedBox(height: 20),
         ],
       ),
     );

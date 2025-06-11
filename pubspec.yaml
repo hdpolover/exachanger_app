@@ -35,6 +35,11 @@ dependencies:
   flutter_html: ^3.0.0-beta.2
   url_launcher: ^6.2.5
   http: ^1.2.1
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  firebase_messaging: ^14.7.10
+  flutter_local_notifications: ^17.2.3
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -55,20 +60,20 @@ flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/images/logo_cut.png"
+  image_path: "assets/images/logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true
-    image_path: "assets/images/logo_cut.png"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
+    image_path: "assets/images/logo.png"
+    background_color: "#FFFFFF"
+    theme_color: "#000000"
   windows:
     generate: true
-    image_path: "assets/images/logo_cut.png"
+    image_path: "assets/images/logo.png"
     icon_size: 48 # min:48, max:256, default: 48
   macos:
     generate: true
-    image_path: "assets/images/logo_cut.png"
+    image_path: "assets/images/logo.png"
 
 flutter_native_splash:
   # This package generates native code to customize Flutter's default white native splash screen
@@ -90,7 +95,7 @@ flutter_native_splash:
 
   # The image parameter allows you to specify an image used in the splash screen.  It must be a 
   # png file and should be sized for 4x pixel density.
-  image: assets/images/logo_cut.png
+  image: assets/images/logo.png
 
   # The branding property allows you to specify an image used as branding in the splash screen.
   # It must be a png file. It is supported for Android, iOS and the Web.  For Android 12,
@@ -125,7 +130,7 @@ flutter_native_splash:
     image: assets/images/logo_cut.png
 
     # Splash screen background color.
-    color: "#4B7CBF"  # Using your app's primary color
+    color: "#FFFFFF"  # White background
 
     # App icon background color.
     #icon_background_color: "#111111"
@@ -137,7 +142,7 @@ flutter_native_splash:
     # apply when the device is in dark mode. If they are not specified, the app will use the
     # parameters from above.
     #image_dark: assets/images/splash-invert.png
-    color_dark: "#38686A"  # Using your app's accent color for dark mode
+    color_dark: "#FFFFFF"  # White background for dark mode
     #icon_background_color_dark: "#eeeeee"
 
   # The android, ios and web parameters can be used to disable generating a splash screen on a given

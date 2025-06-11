@@ -47,10 +47,17 @@ Exception _parseDioErrorResponse(DioException dioError) {
 
   try {
     if (statusCode == -1 || statusCode == HttpStatus.ok) {
-      statusCode = dioError.response?.data["statusCode"];
+      statusCode =
+          dioError.response?.data["statusCode"] ??
+          dioError.response?.data["code"];
     }
     status = dioError.response?.data["status"];
-    serverMessage = dioError.response?.data["message"];
+
+    // Check for message in different possible locations
+    serverMessage =
+        dioError.response?.data["message"] ??
+        dioError.response?.data["error"] ??
+        dioError.response?.data["detail"];
   } catch (e, s) {
     logger.i("$e");
     logger.i(s.toString());

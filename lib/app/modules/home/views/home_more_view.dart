@@ -91,7 +91,7 @@ class HomeMoreView extends BaseView<HomeController> {
               Text(controller.error.value),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: controller.refreshData,
+                onPressed: controller.refreshAll,
                 child: Text('Retry'),
               ),
             ],

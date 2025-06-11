@@ -4,6 +4,7 @@ import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
 import 'package:exachanger_get_app/app/modules/profile/views/widgets/setting_item.dart';
+import 'package:exachanger_get_app/app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -119,9 +120,10 @@ class ProfileView extends BaseView<ProfileController> {
                             onPressed: () {
                               Navigator.pop(context);
 
-                              // Clear user data and navigate to login page
-                              PreferenceManagerImpl().logout();
-                              Get.offAllNamed(Routes.WELCOME);
+                              // Use AuthService for proper logout
+                              final AuthService authService =
+                                  Get.find<AuthService>();
+                              authService.signOut();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,

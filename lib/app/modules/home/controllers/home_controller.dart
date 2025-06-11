@@ -37,15 +37,16 @@ class HomeController extends BaseController {
   DataService? _dataService;
 
   // Getter with lazy initialization for DataService
-  DataService get dataService {
+  DataService? get dataService {
     if (_dataService == null) {
       try {
         _dataService = Get.find<DataService>();
       } catch (e) {
         print("DataService not available yet: $e");
+        return null;
       }
     }
-    return _dataService!;
+    return _dataService;
   }
 
   //promos
@@ -69,8 +70,8 @@ class HomeController extends BaseController {
   );
   List<NotificationModel> get notifications => notificationList.value;
   final RxBool isLoadingNotifications = false.obs;
-  final RxString notificationError = "".obs;
-  // Refresh controller for notification pull-to-refresh
+  final RxString notificationError =
+      "".obs; // Refresh controller for notification pull-to-refresh
   RefreshController? _notificationRefreshController;
   // Notification pagination
   final RxInt notificationPage = 1.obs;
@@ -90,16 +91,12 @@ class HomeController extends BaseController {
   // Data loading state
   final RxBool isLoading = false.obs;
   final RxString error = "".obs;
-
   // Refresh controller for pull-to-refresh
   RefreshController? _refreshController;
 
   RefreshController get refreshController {
-    // Dispose the old controller if it exists to prevent binding conflicts
-    if (_refreshController != null) {
-      _refreshController!.dispose();
-    }
-    _refreshController = RefreshController(initialRefresh: false);
+    // Only dispose if it already exists and we need to replace it
+    _refreshController ??= RefreshController(initialRefresh: false);
     return _refreshController!;
   }
 
@@ -107,11 +104,8 @@ class HomeController extends BaseController {
   RefreshController? _moreRefreshController;
 
   RefreshController get moreRefreshController {
-    // Dispose the old controller if it exists to prevent binding conflicts
-    if (_moreRefreshController != null) {
-      _moreRefreshController!.dispose();
-    }
-    _moreRefreshController = RefreshController(initialRefresh: false);
+    // Only dispose if it already exists and we need to replace it
+    _moreRefreshController ??= RefreshController(initialRefresh: false);
     return _moreRefreshController!;
   }
 
@@ -165,9 +159,13 @@ class HomeController extends BaseController {
         print('User data registered with GetX');
       } else {
         print('No user data found in preferences');
+        // Set a default user to prevent null errors
+        userData.value = UserModel(id: "", name: "User", email: "");
       }
     } catch (e) {
       print('Error loading user data: $e');
+      // Set a default user to prevent null errors
+      userData.value = UserModel(id: "", name: "User", email: "");
     }
   }
 
@@ -176,14 +174,15 @@ class HomeController extends BaseController {
     try {
       // Method 0: Check DataService first (preferred method)
       try {
-        if (_dataService != null && dataService.dataLoaded.value) {
-          promoList.value = List<PromoModel>.from(dataService.promoList.value);
-          blogList.value = List<BlogModel>.from(dataService.blogList.value);
+        final ds = dataService;
+        if (ds != null && ds.dataLoaded.value) {
+          promoList.value = List<PromoModel>.from(ds.promoList.value);
+          blogList.value = List<BlogModel>.from(ds.blogList.value);
           transactionList.value = List<TransactionModel>.from(
-            dataService.transactionList.value,
+            ds.transactionList.value,
           );
           productList.value = List<ProductModel>.from(
-            dataService.productList.value.where(
+            ds.productList.value.where(
               (product) =>
                   (product.status == "1" ||
                       product.status == "active" ||
@@ -256,7 +255,7 @@ class HomeController extends BaseController {
             blogList.value.isNotEmpty &&
             transactionList.value.isNotEmpty &&
             productList.value.isNotEmpty) {
-          dataService.setData(
+          dataService?.setData(
             promos: promoList.value,
             blogs: blogList.value,
             transactions: transactionList.value,
@@ -319,12 +318,12 @@ class HomeController extends BaseController {
             );
           }
 
-          // Update DataService as well for future use
+          // Cache the data in DataService for future use
           if (promoList.value.isNotEmpty &&
               blogList.value.isNotEmpty &&
               transactionList.value.isNotEmpty &&
               productList.value.isNotEmpty) {
-            dataService.setData(
+            dataService?.setData(
               promos: promoList.value,
               blogs: blogList.value,
               transactions: transactionList.value,
@@ -336,73 +335,177 @@ class HomeController extends BaseController {
         }
       }
 
-      // If we successfully got data from either method, return early
-      if (promoList.value.isNotEmpty &&
-          blogList.value.isNotEmpty &&
-          transactionList.value.isNotEmpty &&
-          productList.value.isNotEmpty) {
-        print("All data loaded from cache");
-        return;
+      // Method 3: Fetch from repositories as fallback
+      if (promoList.value.isEmpty ||
+          blogList.value.isEmpty ||
+          transactionList.value.isEmpty ||
+          productList.value.isEmpty) {
+        print("Fetching data from repositories...");
+        fetchPromos();
+        fetchBlogs();
+        fetchTransactions();
+        fetchProducts();
+
+        // Cache the fetched data in DataService
+        Future.delayed(Duration(seconds: 2), () {
+          if (promoList.value.isNotEmpty &&
+              blogList.value.isNotEmpty &&
+              transactionList.value.isNotEmpty &&
+              productList.value.isNotEmpty) {
+            dataService?.setData(
+              promos: promoList.value,
+              blogs: blogList.value,
+              transactions: transactionList.value,
+              products: productList.value,
+            );
+          }
+        });
       }
     } catch (e) {
-      print("Error getting cached data: $e");
-      // Continue to fetch data if cached data isn't found
+      print("Error in getData: $e");
     }
+  }
 
-    // If we got here, we need to fetch the data
-    print("Fetching fresh data in HomeController");
-    isLoading.value = true;
-    error.value = "";
+  // Load notifications
+  Future<void> loadNotifications() async {
+    try {
+      isLoadingNotifications.value = true;
+      notificationError.value = "";
 
-    // Fetch promos
-    var promoService = promoRepository.getAllPromos();
-    callDataService(
-      promoService,
-      onSuccess: (data) {
+      final ds = dataService;
+      if (ds == null) {
+        print("DataService not available for notifications");
+        return;
+      }
+
+      final notifications = await ds.notificationRepository.getNotifications(
+        page: notificationPage.value,
+      );
+
+      if (notificationPage.value == 1) {
+        notificationList.value = notifications;
+      } else {
+        notificationList.value.addAll(notifications);
+      }
+
+      totalNotifications.value = notificationList.value.length;
+      hasMoreNotifications.value = notifications.length >= 10;
+
+      print(
+        "Loaded ${notifications.length} notifications for page ${notificationPage.value}",
+      );
+    } catch (e) {
+      notificationError.value = "Failed to load notifications: $e";
+      print("Error loading notifications: $e");
+    } finally {
+      isLoadingNotifications.value = false;
+    }
+  }
+
+  // Refresh all data from API
+  Future<void> refreshAll() async {
+    try {
+      isLoading.value = true;
+      print("Refreshing all data...");
+
+      final ds = dataService;
+      if (ds != null) {
+        await ds.refreshAllData();
+
+        if (ds.promoList.value.isNotEmpty) {
+          promoList.value = List<PromoModel>.from(ds.promoList.value);
+        }
+        if (ds.blogList.value.isNotEmpty) {
+          blogList.value = List<BlogModel>.from(ds.blogList.value);
+        }
+        if (ds.transactionList.value.isNotEmpty) {
+          transactionList.value = List<TransactionModel>.from(
+            ds.transactionList.value,
+          );
+        }
+        if (ds.productList.value.isNotEmpty) {
+          // Filter only active products with active rates
+          List<ProductModel> activeProducts = ds.productList.value
+              .where(
+                (p) =>
+                    (p.status == "1" ||
+                        p.status == "active" ||
+                        p.status == 1.toString()) &&
+                    p.rates != null &&
+                    p.rates!.isNotEmpty &&
+                    p.rates!.any((rate) => rate.status == 'active'),
+              )
+              .toList();
+          productList.value = activeProducts;
+        }
+      } else {
+        // Fallback to individual fetches
+        await Future.wait([
+          fetchPromos(),
+          fetchBlogs(),
+          fetchTransactions(),
+          fetchProducts(),
+        ]);
+      }
+
+      print("All data refreshed successfully");
+      refreshController.refreshCompleted();
+    } catch (e) {
+      print("Error refreshing data: $e");
+      refreshController.refreshFailed();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchPromos() async {
+    try {
+      var data = await promoRepository.getAllPromos();
+      if (data.isNotEmpty) {
         promoList.value = data;
-        print("Promos fetched in HomeController: ${data.length}");
-      },
-      onError: (error) {
-        showErrorMessage(error.toString());
-        this.error.value = error.toString();
-      },
-    );
+        print("Fetched ${data.length} promos");
+        // Store fetched data in dataService
+        dataService?.setData(promos: data);
+      }
+    } catch (e) {
+      print("Error fetching promos: $e");
+    }
+  }
 
-    // Fetch blogs
-    var blogService = blogRepository.getAllBlogs();
-    callDataService(
-      blogService,
-      onSuccess: (data) {
+  Future<void> fetchBlogs() async {
+    try {
+      var data = await blogRepository.getAllBlogs();
+      if (data.isNotEmpty) {
         blogList.value = data;
-        print("Blogs fetched in HomeController: ${data.length}");
-      },
-      onError: (error) {
-        showErrorMessage(error.toString());
-        this.error.value = error.toString();
-      },
-    );
+        print("Fetched ${data.length} blogs");
+        // Store fetched data in dataService
+        dataService?.setData(blogs: data);
+      }
+    } catch (e) {
+      print("Error fetching blogs: $e");
+    }
+  }
 
-    // Fetch transactions
-    var transactionService = transactionRepository.getAllTransactions();
-    callDataService(
-      transactionService,
-      onSuccess: (data) {
+  Future<void> fetchTransactions() async {
+    try {
+      var data = await transactionRepository.getAllTransactions();
+      if (data.isNotEmpty) {
         transactionList.value = data;
-        print("Transactions fetched in HomeController: ${data.length}");
-      },
-      onError: (error) {
-        showErrorMessage(error.toString());
-        this.error.value = error.toString();
-      },
-    );
+        print("Fetched ${data.length} transactions");
+        // Store fetched data in dataService
+        dataService?.setData(transactions: data);
+      }
+    } catch (e) {
+      print("Error fetching transactions: $e");
+    }
+  }
 
-    // Fetch products
-    var productService = productRepository.getAllProducts();
-    callDataService(
-      productService,
-      onSuccess: (data) {
+  Future<void> fetchProducts() async {
+    try {
+      var data = await productRepository.getAllProducts();
+      if (data.isNotEmpty) {
         // Filter only active products with active rates
-        productList.value = data
+        List<ProductModel> activeProducts = data
             .where(
               (p) =>
                   (p.status == "1" ||
@@ -413,279 +516,16 @@ class HomeController extends BaseController {
                   p.rates!.any((rate) => rate.status == 'active'),
             )
             .toList();
-        print(
-          "Products fetched in HomeController: ${productList.value.length}",
-        );
-        isLoading.value = false;
 
-        // Update DataService with newly fetched data
-        dataService.setData(
-          promos: promoList.value,
-          blogs: blogList.value,
-          transactions: transactionList.value,
-          products: productList.value,
-        );
-      },
-      onError: (error) {
-        showErrorMessage(error.toString());
-        this.error.value = error.toString();
-        isLoading.value = false;
-      },
-    );
-  }
-
-  // Fetch notifications from API
-  Future<void> fetchNotifications({bool refresh = false}) async {
-    if (refresh) {
-      notificationPage.value = 1;
-      hasMoreNotifications.value = true;
-    }
-
-    if (!hasMoreNotifications.value && !refresh) {
-      return;
-    }
-
-    isLoadingNotifications.value = true;
-    notificationError.value = '';
-    try {
-      final notifications = await dataService.notificationRepository
-          .getNotifications(
-            page: notificationPage.value,
-            limit: 10,
-            sort: notificationSortField.value,
-            order: notificationSortOrder.value,
-            title: notificationTitleFilter.value,
-            type: notificationType.value,
-          );
-
-      // Update pagination info from the response
-      // Since we're using a repository that returns just the list, we'll need to
-      // handle pagination info differently based on the response size
-      final hasMore = notifications.isNotEmpty && notifications.length >= 10;
-      hasMoreNotifications.value = hasMore;
-
-      if (refresh || notificationPage.value == 1) {
-        notificationList.value = notifications;
-      } else {
-        notificationList.value = [...notificationList.value, ...notifications];
-      }
-
-      // Increment page for next load
-      if (hasMoreNotifications.value) {
-        notificationPage.value++;
+        if (activeProducts.isNotEmpty) {
+          productList.value = activeProducts;
+          print("Fetched ${activeProducts.length} active products");
+          // Store fetched data in dataService
+          dataService?.setData(products: activeProducts);
+        }
       }
     } catch (e) {
-      notificationError.value = 'Error: ${e.toString()}';
-      print("Exception while fetching notifications: $e");
-
-      // Show snackbar for network connectivity issues
-      if (isNetworkError(e)) {
-        showNetworkErrorSnackbar();
-      }
-    } finally {
-      isLoadingNotifications.value = false;
-      if (refresh) {
-        notificationRefreshController.refreshCompleted();
-      }
-    }
-  }
-
-  // Fetch notifications from API
-  Future<void> onNotificationRefresh() async {
-    await fetchNotifications(refresh: true);
-  }
-
-  // Load more notifications
-  Future<void> loadMoreNotifications() async {
-    if (!isLoadingNotifications.value && hasMoreNotifications.value) {
-      await fetchNotifications();
-    }
-  }
-
-  // Refresh data from API (for pull-to-refresh functionality)  Future<void> refreshData() async {  // Refresh data from API (for pull-to-refresh functionality)
-  Future<void> refreshData() async {
-    // Store current data as backup in case of API failures
-    List<ProductModel> currentProducts = List<ProductModel>.from(
-      productList.value,
-    );
-
-    print(
-      "DEBUG - Before refresh: Current active products count: ${currentProducts.length}",
-    );
-
-    try {
-      isLoading.value = true;
-      error.value = "";
-
-      // Make sure we have access to the DataService
-      if (_dataService != null) {
-        // Use DataService to refresh all data at once
-        await dataService.refreshAllData();
-        // Update our local lists from the refreshed data in DataService
-        if (dataService.promoList.value.isNotEmpty) {
-          promoList.value = List<PromoModel>.from(dataService.promoList.value);
-        }
-        if (dataService.blogList.value.isNotEmpty) {
-          blogList.value = List<BlogModel>.from(dataService.blogList.value);
-        }
-        if (dataService.transactionList.value.isNotEmpty) {
-          transactionList.value = List<TransactionModel>.from(
-            dataService.transactionList.value,
-          );
-        } // Make sure we're only getting active products (status == "1" or "active") if we have any products
-        if (dataService.productList.value.isNotEmpty) {
-          // Filter the products to only get active ones
-          List<ProductModel> activeProducts = dataService.productList.value
-              .where(
-                (p) =>
-                    p.status == "1" ||
-                    p.status == "active" ||
-                    p.status == 1.toString(),
-              )
-              .toList();
-
-          if (activeProducts.isNotEmpty) {
-            productList.value = activeProducts;
-            print(
-              "DEBUG - After refresh: Active products count=${activeProducts.length}",
-            );
-          } else {
-            // No active products found, keep existing
-            print(
-              "DEBUG - No active products found after refresh, keeping existing (${currentProducts.length})",
-            );
-            if (currentProducts.isNotEmpty) {
-              productList.value = currentProducts;
-            }
-          }
-        } else {
-          // No products at all, keep existing
-          print(
-            "DEBUG - No products found in DataService after refresh, keeping existing (${currentProducts.length})",
-          );
-          if (currentProducts.isNotEmpty) {
-            productList.value = currentProducts;
-          }
-        }
-
-        isLoading.value = false;
-        print("All data refreshed through DataService");
-        return;
-      } else {
-        print("DataService not available, using fallback");
-      }
-    } catch (e) {
-      print(
-        "DataService refresh failed, falling back to individual API calls: $e",
-      );
-      error.value = e.toString();
-
-      // Fall back to individual API calls if DataService refresh fails
-
-      // Fetch promos
-      await callDataService(
-        promoRepository.getAllPromos(),
-        onSuccess: (data) {
-          promoList.value = data;
-          // Update the DataService with new promos
-          dataService.setData(promos: data);
-        },
-        onError: (error) {
-          showErrorMessage(error.toString());
-          this.error.value = error.toString();
-        },
-      );
-
-      // Fetch blogs
-      await callDataService(
-        blogRepository.getAllBlogs(),
-        onSuccess: (data) {
-          blogList.value = data;
-          // Update the DataService with new blogs
-          dataService.setData(blogs: data);
-        },
-        onError: (error) {
-          showErrorMessage(error.toString());
-          this.error.value = error.toString();
-        },
-      );
-
-      // Fetch transactions
-      await callDataService(
-        transactionRepository.getAllTransactions(),
-        onSuccess: (data) {
-          transactionList.value = data;
-          // Update the DataService with new transactions
-          dataService.setData(transactions: data);
-        },
-        onError: (error) {
-          showErrorMessage(error.toString());
-          this.error.value = error.toString();
-        },
-      );
-
-      // Fetch products
-      await callDataService(
-        productRepository.getAllProducts(),
-        onSuccess: (data) {
-          print(
-            "DEBUG - Fallback refresh: Raw products fetched: ${data.length}",
-          );
-          if (data.isNotEmpty) {
-            // Filter only active products with active rates
-            List<ProductModel> activeProducts = data
-                .where(
-                  (p) =>
-                      (p.status == "1" ||
-                          p.status == "active" ||
-                          p.status == 1.toString()) &&
-                      p.rates != null &&
-                      p.rates!.isNotEmpty &&
-                      p.rates!.any((rate) => rate.status == 'active'),
-                )
-                .toList();
-            print(
-              "DEBUG - Fallback refresh: Active products filtered: ${activeProducts.length}",
-            );
-            if (activeProducts.isNotEmpty) {
-              productList.value = activeProducts;
-              // Update the DataService with new products
-              dataService.setData(products: activeProducts);
-            } else {
-              print(
-                "DEBUG - Fallback refresh: No active products found, keeping existing products",
-              );
-              // Maintain existing products if available
-              if (currentProducts.isNotEmpty) {
-                print(
-                  "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products",
-                );
-                // Keep the current products
-                // Don't update DataService with currentProducts to avoid confusion
-              }
-            }
-          } else {
-            print(
-              "DEBUG - Fallback refresh: No products returned from API, keeping existing products",
-            );
-            // Maintain existing products if available
-            if (currentProducts.isNotEmpty) {
-              print(
-                "DEBUG - Fallback refresh: Restoring ${currentProducts.length} previous products",
-              );
-              // Keep the current products
-              // Don't update DataService with currentProducts to avoid confusion
-            }
-          }
-        },
-        onError: (error) {
-          showErrorMessage(error.toString());
-          this.error.value = error.toString();
-          print("DEBUG - Fallback refresh: Error fetching products: $error");
-        },
-      );
-    } finally {
-      isLoading.value = false;
+      print("Error fetching products: $e");
     }
   }
 
@@ -701,46 +541,152 @@ class HomeController extends BaseController {
     super.onInit();
 
     isLoading.value = true; // Start with loading state to show shimmer effects
-    getData();
-    loadUserData().then((_) {
-      // Small delay to ensure shimmer is visible even on fast loads
-      Future.delayed(Duration(milliseconds: 300), () {
-        isLoading.value = false;
+
+    // Ensure DataService is available before proceeding
+    _initializeDataService().then((_) {
+      getData();
+      loadUserData().then((_) {
+        // Small delay to ensure shimmer is visible even on fast loads
+        Future.delayed(Duration(milliseconds: 300), () {
+          isLoading.value = false;
+        });
       });
     });
   }
 
+  // Helper method to ensure DataService is properly initialized
+  Future<void> _initializeDataService() async {
+    if (Get.isRegistered<DataService>()) {
+      try {
+        // Try to get DataService, if not available, wait and retry
+        if (_dataService == null) {
+          for (int i = 0; i < 5; i++) {
+            try {
+              _dataService = Get.find<DataService>();
+              print("DataService found on attempt ${i + 1}");
+              break;
+            } catch (e) {
+              print(
+                "DataService not available on attempt ${i + 1}, waiting...",
+              );
+              if (i < 4) {
+                await Future.delayed(Duration(milliseconds: 100 * (i + 1)));
+              }
+            }
+          }
+        }
+      } catch (e) {
+        print("Failed to initialize DataService: $e");
+      }
+    } else {
+      print("DataService not registered yet");
+    }
+  }
+
   @override
   void onClose() {
-    _refreshController?.dispose();
-    _moreRefreshController?.dispose();
-    _notificationRefreshController?.dispose();
-    super.onClose();
+    try {
+      // Safely dispose refresh controllers
+      _refreshController?.dispose();
+      _refreshController = null;
+
+      _moreRefreshController?.dispose();
+      _moreRefreshController = null;
+
+      _notificationRefreshController?.dispose();
+      _notificationRefreshController = null;
+
+      // Clear data service reference
+      _dataService = null;
+
+      print("HomeController disposed successfully");
+    } catch (e) {
+      print("Error disposing HomeController: $e");
+    } finally {
+      super.onClose();
+    }
   }
 
   // Method for pull-to-refresh
   Future<void> onRefresh() async {
     print("DEBUG - Pull to refresh triggered!");
     try {
-      await refreshData();
+      await refreshAll();
       print("DEBUG - Refresh completed successfully");
-      refreshController.refreshCompleted();
+      if (!isClosed && _refreshController != null) {
+        refreshController.refreshCompleted();
+      }
     } catch (error) {
       print("DEBUG - Refresh failed: $error");
-      refreshController.refreshFailed();
+      if (!isClosed && _refreshController != null) {
+        refreshController.refreshFailed();
+      }
     }
   }
 
   // Method for pull-to-refresh in more view
   Future<void> onMoreRefresh() async {
-    print("DEBUG - More view pull to refresh triggered!");
-    try {
-      await refreshData();
-      print("DEBUG - More view refresh completed successfully");
-      moreRefreshController.refreshCompleted();
-    } catch (error) {
-      print("DEBUG - More view refresh failed: $error");
-      moreRefreshController.refreshFailed();
+    if (!isClosed) {
+      print("DEBUG - More view pull to refresh triggered!");
+      try {
+        await refreshAll();
+        print("DEBUG - More view refresh completed successfully");
+        if (!isClosed && _moreRefreshController != null) {
+          moreRefreshController.refreshCompleted();
+        }
+      } catch (error) {
+        print("DEBUG - More view refresh failed: $error");
+        if (!isClosed && _moreRefreshController != null) {
+          moreRefreshController.refreshFailed();
+        }
+      }
+    }
+  }
+
+  // Notification methods
+  Future<void> onNotificationRefresh() async {
+    if (!isClosed) {
+      try {
+        notificationPage.value = 1;
+        await loadNotifications();
+        if (!isClosed && _notificationRefreshController != null) {
+          notificationRefreshController.refreshCompleted();
+        }
+      } catch (e) {
+        print("Error refreshing notifications: $e");
+        if (!isClosed && _notificationRefreshController != null) {
+          notificationRefreshController.refreshFailed();
+        }
+      }
+    }
+  }
+
+  Future<void> loadMoreNotifications() async {
+    if (!isClosed) {
+      try {
+        if (!hasMoreNotifications.value) {
+          if (!isClosed && _notificationRefreshController != null) {
+            notificationRefreshController.loadComplete();
+          }
+          return;
+        }
+
+        notificationPage.value++;
+        await loadNotifications();
+
+        if (!isClosed && _notificationRefreshController != null) {
+          if (hasMoreNotifications.value) {
+            notificationRefreshController.loadComplete();
+          } else {
+            notificationRefreshController.loadNoData();
+          }
+        }
+      } catch (e) {
+        print("Error loading more notifications: $e");
+        if (!isClosed && _notificationRefreshController != null) {
+          notificationRefreshController.loadFailed();
+        }
+      }
     }
   }
 
@@ -780,7 +726,7 @@ class HomeController extends BaseController {
     }
 
     if (changed) {
-      fetchNotifications(refresh: true);
+      loadNotifications();
     }
   }
 
@@ -790,6 +736,6 @@ class HomeController extends BaseController {
     notificationType.value = '';
     notificationSortField.value = 'created_at';
     notificationSortOrder.value = 'DESC';
-    fetchNotifications(refresh: true);
+    loadNotifications();
   }
 }

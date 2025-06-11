@@ -26,10 +26,7 @@ class SplashView extends StatelessWidget {
         children: [
           // image for pattern
           Positioned.fill(
-            child: Image.asset(
-              AppImages.pattern,
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset(AppImages.pattern, fit: BoxFit.cover),
           ),
           // image for logo
           Center(
@@ -40,16 +37,19 @@ class SplashView extends StatelessWidget {
                   AppImages.logo,
                   width: 200,
                   height: 200,
+                  fit: BoxFit.contain,
                 ),
                 SizedBox(height: 20),
                 // Loading status text
-                Obx(() => Text(
-                      controller.statusText.value,
-                      style: regularBodyTextStyle.copyWith(
-                        color: AppColors.colorPrimary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    )),
+                Obx(
+                  () => Text(
+                    controller.statusText.value,
+                    style: regularBodyTextStyle.copyWith(
+                      color: AppColors.colorPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
                 SizedBox(height: 10),
                 // Loading indicator
                 SizedBox(

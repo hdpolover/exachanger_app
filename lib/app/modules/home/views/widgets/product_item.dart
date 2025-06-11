@@ -44,12 +44,15 @@ class ProductItem extends StatelessWidget {
                                     Container(color: Colors.grey[200]),
                                 errorWidget: (context, url, error) =>
                                     Image.asset(
-                                      AppImages.logo,
+                                      AppImages.newLogo,
                                       fit: BoxFit.contain,
                                     ),
                                 fit: BoxFit.contain,
                               )
-                            : Image.asset(AppImages.logo, fit: BoxFit.contain),
+                            : Image.asset(
+                                AppImages.newLogo,
+                                fit: BoxFit.contain,
+                              ),
                       ),
                     ),
                   ),

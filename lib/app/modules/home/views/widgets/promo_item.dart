@@ -23,7 +23,7 @@ class PromoItem extends StatelessWidget {
         child: Hero(
           tag: promo.id!,
           child: CachedNetworkImage(
-            imageUrl: promo.image ?? AppImages.logo,
+            imageUrl: promo.image ?? AppImages.newLogo,
             fit: BoxFit.cover,
             placeholder: (context, url) => ShimmerWidget(height: h, width: w),
             errorWidget: (context, url, error) => NoImage(),

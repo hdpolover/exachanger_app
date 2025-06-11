@@ -8,51 +8,46 @@ class CustomOutlinedButton extends StatelessWidget {
     required this.onPressed,
     this.width = double.infinity,
     this.height = 56,
+    this.icon,
   });
 
   final String label;
   final VoidCallback onPressed;
   final double width;
   final double height;
+  final Widget? icon;
 
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
       onPressed: onPressed,
       style: ButtonStyle(
-        minimumSize: WidgetStateProperty.all(
-          Size(width, height),
-        ),
-        maximumSize: WidgetStateProperty.all(
-          Size(width, height),
-        ),
+        minimumSize: WidgetStateProperty.all(Size(width, height)),
+        maximumSize: WidgetStateProperty.all(Size(width, height)),
         backgroundColor: WidgetStateProperty.all(Colors.white),
         padding: WidgetStateProperty.all(
-          EdgeInsets.symmetric(
-            vertical: 16,
-            horizontal: 24,
-          ),
+          EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
-        side: WidgetStateProperty.all(
-          BorderSide(
-            color: Colors.grey,
-            width: 1,
-          ),
-        ),
+        side: WidgetStateProperty.all(BorderSide(color: Colors.grey, width: 1)),
         // elevation: WidgetStateProperty.all(0),
         elevation: WidgetStateProperty.all(1),
         shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
-      child: Text(
-        label,
-        style: regularBodyTextStyle.copyWith(
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[icon!, SizedBox(width: 12)],
+          Text(
+            label,
+            style: regularBodyTextStyle.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

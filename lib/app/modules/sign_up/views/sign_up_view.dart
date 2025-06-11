@@ -1,6 +1,8 @@
 import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
+import 'package:exachanger_get_app/app/core/values/app_images.dart';
+import 'package:exachanger_get_app/app/core/widgets/custom_loading_dialog.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -22,14 +24,14 @@ class SignUpView extends BaseView<SignUpController> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController referralCodeController = TextEditingController();
 
-  @override
-  void onClose() {
+  void disposeControllers() {
     fullNameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     passwordController.dispose();
-    // super.onClose();
+    referralCodeController.dispose();
   }
 
   @override
@@ -41,7 +43,8 @@ class SignUpView extends BaseView<SignUpController> {
       ),
       centerTitle: false,
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
     );
   }
 
@@ -53,10 +56,7 @@ class SignUpView extends BaseView<SignUpController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Sign Up',
-              style: titleTextStyle,
-            ),
+            Text('Sign Up', style: titleTextStyle),
             const SizedBox(height: 4),
             Text(
               'Create account and happy transaction!',
@@ -68,10 +68,7 @@ class SignUpView extends BaseView<SignUpController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Already have account? ',
-                  style: regularBodyTextStyle,
-                ),
+                Text('Already have account? ', style: regularBodyTextStyle),
                 InkWell(
                   onTap: () => Get.toNamed(Routes.SIGN_IN),
                   child: Text(
@@ -158,6 +155,14 @@ class SignUpView extends BaseView<SignUpController> {
             validator: controller.validatePassword,
           ),
           const SizedBox(height: 16),
+          CustomTextFormField(
+            controller: referralCodeController,
+            labelText: 'Referral Code (Optional)',
+            hintText: 'Enter referral code',
+            prefixIcon: Icon(Icons.card_giftcard_outlined),
+            validator: null, // Optional field
+          ),
+          const SizedBox(height: 16),
           Obx(
             () => Row(
               children: [
@@ -176,9 +181,7 @@ class SignUpView extends BaseView<SignUpController> {
                         fontSize: 14,
                       ),
                       children: [
-                        TextSpan(
-                          text: 'I agree to the company ',
-                        ),
+                        TextSpan(text: 'I agree to the company '),
                         TextSpan(
                           text: 'Term of Service',
                           style: regularBodyTextStyle.copyWith(
@@ -186,9 +189,7 @@ class SignUpView extends BaseView<SignUpController> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        TextSpan(
-                          text: ' and ',
-                        ),
+                        TextSpan(text: ' and '),
                         TextSpan(
                           text: 'Privacy Policy',
                           style: regularBodyTextStyle.copyWith(
@@ -204,10 +205,7 @@ class SignUpView extends BaseView<SignUpController> {
             ),
           ),
           const SizedBox(height: 24),
-          CustomButton(
-            label: "Sign Up",
-            onPressed: () => _submit(context),
-          ),
+          CustomButton(label: "Sign Up", onPressed: () => _submit(context)),
           const SizedBox(height: 16),
           Center(
             child: Text(
@@ -217,8 +215,40 @@ class SignUpView extends BaseView<SignUpController> {
           ),
           const SizedBox(height: 16),
           CustomOutlinedButton(
-            label: "Google",
-            onPressed: () {},
+            label: "Sign up with Google",
+            icon: Image.asset(
+              AppImages.googleLogo,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
+            ),
+            onPressed: () async {
+              // Show loading with custom animated dialog for Google sign up
+              Get.dialog(
+                CustomLoadingDialog(
+                  message:
+                      'Signing up with Google...\nCreating your account...',
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black87,
+                ),
+                barrierDismissible: false,
+              );
+
+              // Prepare Google sign-up data
+              Map<String, dynamic> data = {
+                'email': '', // Will be filled by Firebase
+                'phone': phoneController.text.isNotEmpty
+                    ? phoneNumber.value
+                    : '',
+                'password': '', // Not needed for Google sign-up
+                'referral_code': referralCodeController.text.trim(),
+                'device_token': 'device_token_google',
+                'type': 1, // 1 for Google sign-up
+              };
+
+              // Call the controller to handle Google sign-up
+              controller.doSignUp(data);
+            },
           ),
         ],
       ),
@@ -227,12 +257,25 @@ class SignUpView extends BaseView<SignUpController> {
 
   void _submit(BuildContext context) {
     if (controller.formKey.currentState!.validate() && agreeToTerms.value) {
+      // Show loading with custom animated dialog
+      Get.dialog(
+        CustomLoadingDialog(
+          message: 'Creating your account...',
+          backgroundColor: Colors.white,
+          textColor: Colors.black87,
+        ),
+        barrierDismissible: false,
+      );
+
       final Map<String, dynamic> data = {
-        'fullName': fullNameController.text,
-        'email': emailController.text,
-        'phoneNumber': phoneNumber.value,
+        'email': emailController.text.trim(),
+        'phone': phoneNumber.value.isNotEmpty
+            ? phoneNumber.value
+            : phoneController.text.trim(),
         'password': passwordController.text,
-        'device_token': 'device',
+        'referral_code': referralCodeController.text.trim(),
+        'device_token': 'device_token_regular',
+        'type': 0, // 0 for regular email sign-up
       };
 
       // Pass the data to controller
@@ -244,6 +287,14 @@ class SignUpView extends BaseView<SignUpController> {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        duration: Duration(
+          seconds: 4,
+        ), // Longer duration for this important message
+        icon: Icon(Icons.warning, color: Colors.white),
+        margin: EdgeInsets.all(16), // Add margins for better spacing
+        borderRadius: 8, // Add border radius for better appearance
+        isDismissible: true, // Allow manual dismissal
+        forwardAnimationCurve: Curves.easeOutBack,
       );
     }
   }

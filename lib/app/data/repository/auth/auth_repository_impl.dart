@@ -4,8 +4,9 @@ import 'package:exachanger_get_app/app/data/repository/auth/auth_repository.dart
 import 'package:get/get.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDataSource _remoteSource =
-      Get.find(tag: (AuthRemoteDataSource).toString());
+  final AuthRemoteDataSource _remoteSource = Get.find(
+    tag: (AuthRemoteDataSource).toString(),
+  );
 
   @override
   Future<SigninModel> getAuthData(Map<String, dynamic> data) {
@@ -13,8 +14,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> signUp(Map<String, dynamic> data) {
+    return _remoteSource.signUp(data);
+  }
+
+  @override
+  Future<void> logout(String refreshToken) {
+    return _remoteSource.logout(refreshToken);
+  }
+
+  @override
+  Future<void> forgotPassword(String email) {
+    return _remoteSource.forgotPassword(email);
+  }
+
+  @override
+  Future<bool> isLoggedIn() {
+    return _remoteSource.isLoggedIn();
+  }
+
+  @override
   Future<String> refreshToken(String token) {
-    // TODO: implement refreshToken
     return _remoteSource.refreshToken(token);
   }
 }

@@ -25,11 +25,15 @@ class CriticalErrorService extends GetxService {
     if (endpoint != null && _isNonCriticalEndpoint(endpoint)) {
       print('🔍 Non-critical endpoint - no server error page');
       return false;
-    }
-
-    // Network errors don't trigger server error page (show network error instead)
+    } // Network errors don't trigger server error page (show network error instead)
     if (error is NetworkException) {
       print('🔍 Network error - no server error page');
+      return false;
+    }
+
+    // User registration errors don't trigger server error page (handled gracefully)
+    if (error.toString().contains('UserRegistrationException')) {
+      print('🔍 User registration error - no server error page');
       return false;
     }
 
