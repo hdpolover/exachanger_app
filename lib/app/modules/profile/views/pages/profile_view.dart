@@ -2,7 +2,6 @@ import 'package:animations/animations.dart';
 import 'package:exachanger_get_app/app/core/base/base_view.dart';
 import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
-import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
 import 'package:exachanger_get_app/app/modules/profile/views/widgets/setting_item.dart';
 import 'package:exachanger_get_app/app/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -179,17 +178,21 @@ class ProfileView extends BaseView<ProfileController> {
       icon: Icons.person,
       title: 'Profile Information',
       subtitle: 'Manage account details',
-      onTap: () => () {
-        // Handle navigation
+      onTap: () {
+        return () {
+          Get.toNamed(Routes.PROFILE_INFORMATION);
+        };
       },
     ),
     // referral code
     SettingItem(
-      icon: Icons.person,
+      icon: Icons.card_giftcard,
       title: 'Referral Code',
       subtitle: 'Invite your friends and earn rewards',
-      onTap: () => () {
-        // Handle navigation
+      onTap: () {
+        return () {
+          Get.toNamed(Routes.REFERRAL);
+        };
       },
     ),
     // about exchanger
@@ -197,8 +200,10 @@ class ProfileView extends BaseView<ProfileController> {
       icon: Icons.info,
       title: 'About Exchanger',
       subtitle: 'Get to know more about Exchanger',
-      onTap: () => () {
-        // Handle navigation
+      onTap: () {
+        return () {
+          Get.toNamed(Routes.ABOUT_EXACHANGER);
+        };
       },
     ),
     // faq
@@ -206,8 +211,10 @@ class ProfileView extends BaseView<ProfileController> {
       icon: Icons.help,
       title: 'FAQs',
       subtitle: 'Frequently asked questions',
-      onTap: () => () {
-        // Handle navigation
+      onTap: () {
+        return () {
+          Get.toNamed(Routes.FAQS);
+        };
       },
     ),
     // log out

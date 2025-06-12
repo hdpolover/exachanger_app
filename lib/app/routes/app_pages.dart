@@ -18,11 +18,18 @@ import '../modules/home/views/home_view.dart';
 import '../modules/main/bindings/main_binding.dart';
 import '../modules/main/views/main_view.dart';
 import '../modules/profile/bindings/profile_binding.dart';
+import '../modules/referral/bindings/referral_binding.dart';
 import '../modules/profile/views/pages/profile_view.dart';
+import '../modules/profile/views/pages/profile_information_view.dart';
+import '../modules/referral/views/referral_view.dart';
+import '../modules/profile/views/pages/about_app_view.dart';
+import '../modules/profile/views/pages/faqs_view.dart';
 import '../modules/promo/bindings/promo_binding.dart';
 import '../modules/promo/views/promo_view.dart';
 import '../modules/server_error/views/server_error_page_clean.dart';
 import '../modules/server_error/controllers/server_error_controller.dart';
+import '../modules/forgot_password/bindings/forgot_password_binding.dart';
+import '../modules/forgot_password/views/forgot_password_view.dart';
 
 import '../modules/rate/bindings/rate_binding.dart';
 import '../modules/rate/views/rate_view.dart';
@@ -49,6 +56,26 @@ class AppPages {
     GetPage(
       name: _Paths.PROFILE,
       page: () => ProfileView(),
+      binding: ProfileBinding(),
+    ),
+    GetPage(
+      name: _Paths.PROFILE_INFORMATION,
+      page: () => ProfileInformationView(),
+      binding: ProfileBinding(),
+    ),
+    GetPage(
+      name: _Paths.REFERRAL,
+      page: () => ReferralView(),
+      binding: ReferralBinding(),
+    ),
+    GetPage(
+      name: _Paths.ABOUT_EXACHANGER,
+      page: () => AboutExachangerView(),
+      binding: ProfileBinding(),
+    ),
+    GetPage(
+      name: _Paths.FAQS,
+      page: () => FaqsView(),
       binding: ProfileBinding(),
     ),
     GetPage(name: _Paths.MAIN, page: () => MainView(), binding: MainBinding()),
@@ -125,6 +152,11 @@ class AppPages {
       binding: BindingsBuilder(() {
         Get.lazyPut<ServerErrorController>(() => ServerErrorController());
       }),
+    ),
+    GetPage(
+      name: _Paths.FORGOT_PASSWORD,
+      page: () => ForgotPasswordView(),
+      binding: ForgotPasswordBinding(),
     ),
   ];
 }

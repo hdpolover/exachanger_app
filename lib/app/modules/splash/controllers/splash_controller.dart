@@ -12,6 +12,7 @@ import 'package:exachanger_get_app/app/data/repository/transaction/transaction_r
 import 'package:exachanger_get_app/app/modules/welcome/controllers/welcome_controller.dart';
 import 'package:exachanger_get_app/app/network/dio_provider.dart';
 import 'package:exachanger_get_app/app/network/exceptions/unauthorize_exception.dart';
+import 'package:exachanger_get_app/app/services/auth_service.dart';
 import 'package:exachanger_get_app/app/services/data_service.dart';
 import 'package:get/get.dart';
 
@@ -95,8 +96,36 @@ class SplashController extends BaseController {
 
   // check if signed in
   Future<bool> isSignedIn() async {
-    bool isSignedIn = await preferenceManager.getBool("is_signed_in");
-    return isSignedIn;
+    try {
+      // Check multiple authentication indicators for robustness
+      bool isSignedInFlag = await preferenceManager.getBool("is_signed_in");
+      String accessToken = await preferenceManager.getString("access_token");
+      String refreshToken = await preferenceManager.getString("refresh_token");
+
+      // If any critical auth data is missing, user is not signed in
+      if (!isSignedInFlag || accessToken.isEmpty || refreshToken.isEmpty) {
+        print("Authentication data missing or invalid:");
+        print("- isSignedIn flag: $isSignedInFlag");
+        print("- hasAccessToken: ${accessToken.isNotEmpty}");
+        print("- hasRefreshToken: ${refreshToken.isNotEmpty}");
+        return false;
+      }
+
+      // Check if we have user data
+      final userData = await preferenceManager.getUserData();
+      if (userData == null) {
+        print("User data not found, considering user as not signed in");
+        return false;
+      }
+
+      print(
+        "User appears to be signed in: ${userData.name} (${userData.email})",
+      );
+      return true;
+    } catch (e) {
+      print("Error checking sign-in status: $e");
+      return false;
+    }
   }
 
   // Verify token validity and refresh if needed
@@ -107,6 +136,12 @@ class SplashController extends BaseController {
       String token = await preferenceManager.getString("access_token");
       String refreshToken = await preferenceManager.getString("refresh_token");
 
+      if (token.isEmpty || refreshToken.isEmpty) {
+        print("Missing tokens, authentication verification failed");
+        await preferenceManager.logout();
+        return false;
+      }
+
       // Set current token
       DioProvider.setAuthToken(token);
 
@@ -115,12 +150,15 @@ class SplashController extends BaseController {
         statusText.value = "Authenticating...";
         // Make a simple request to verify token
         await transactionRepository.getAllTransactions();
+        print("Token verification successful");
         return true; // Token is valid
       } catch (e) {
+        print("Token verification failed: $e");
         // Check if unauthorized exception
         if (e is UnauthorizedException) {
           try {
             statusText.value = "Refreshing token...";
+            print("Attempting token refresh...");
             // Try to refresh token
             final newAccessToken = await authRemoteDataSource.refreshToken(
               refreshToken,
@@ -132,20 +170,34 @@ class SplashController extends BaseController {
             // Update Authorization header
             DioProvider.setAuthToken(newAccessToken);
 
+            print("Token refresh successful");
             return true; // Token refreshed successfully
           } catch (refreshError) {
+            print("Token refresh failed: $refreshError");
             // Refresh token also failed, logout
             await preferenceManager.logout();
             return false;
           }
         }
-        // Other error, not token related
+        // Other error, not token related - could be network issues
+        // Don't logout immediately for network errors
+        if (e.toString().contains('network') ||
+            e.toString().contains('connection') ||
+            e.toString().contains('timeout')) {
+          print(
+            "Network error during token verification, but keeping user signed in",
+          );
+          return true; // Keep user signed in for network errors
+        }
+
+        // For other errors, logout
+        await preferenceManager.logout();
         return false;
       }
     } catch (e) {
-      // General error
-      await preferenceManager.logout();
-      return false;
+      print("General error during token verification: $e");
+      // General error - don't logout for temporary issues
+      return true; // Keep user signed in
     }
   }
 
@@ -277,17 +329,69 @@ class SplashController extends BaseController {
     );
   }
 
+  // Add method to wait for AuthService to be fully initialized
+  Future<void> _waitForAuthServiceInitialization() async {
+    try {
+      // Wait for AuthService to be available and initialized
+      int attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+
+      while (attempts < maxAttempts) {
+        try {
+          Get.find<AuthService>();
+          // Service is available, give it a moment to complete initialization
+          await Future.delayed(Duration(milliseconds: 100));
+          print("SplashController: AuthService is available and initialized");
+          return;
+        } catch (e) {
+          // Service not ready yet, wait and try again
+          attempts++;
+          await Future.delayed(Duration(milliseconds: 100));
+          if (attempts % 10 == 0) {
+            print(
+              "SplashController: Waiting for AuthService initialization... (attempt $attempts)",
+            );
+          }
+        }
+      }
+
+      print("SplashController: WARNING - AuthService initialization timeout");
+    } catch (e) {
+      print("SplashController: Error waiting for AuthService: $e");
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
 
-    // check if signed in
-    isSignedIn().then((isSignedIn) async {
-      if (isSignedIn) {
-        // Verify token and refresh if needed
-        bool isTokenValid = await verifyAndRefreshToken();
+    print("SplashController: Initializing...");
 
-        if (isTokenValid) {
+    // Small delay to ensure all services are initialized
+    Future.delayed(Duration(milliseconds: 200), () async {
+      try {
+        // Wait for AuthService initialization
+        await _waitForAuthServiceInitialization();
+
+        print("SplashController: Starting authentication validation");
+
+        // Get AuthService instance for centralized auth state management
+        final AuthService authService = Get.find<AuthService>();
+
+        // Use AuthService to validate and repair authentication state
+        bool isAuthValid = await authService.validateAndRepairAuthState();
+
+        print("SplashController: AuthService validation result: $isAuthValid");
+        print(
+          "SplashController: AuthService authenticated state: ${authService.isAuthenticated.value}",
+        );
+        print(
+          "SplashController: AuthService user email: ${authService.currentUserEmail.value}",
+        );
+
+        if (isAuthValid && authService.isAuthenticated.value) {
+          print("SplashController: User is authenticated, loading app data");
+
           // Load user data first
           await loadUserData();
 
@@ -303,30 +407,30 @@ class SplashController extends BaseController {
           Get.put(transactionList, tag: "cached_transactions", permanent: true);
           Get.put(productList, tag: "cached_products", permanent: true);
 
+          print("SplashController: Navigating to main screen");
           // Navigate to main screen
           Get.offNamed(Routes.MAIN);
         } else {
-          // Token refresh failed, go to welcome screen
-          var metadataController = Get.find<WelcomeController>();
-          metadataController.getWelcomeInfo();
-
-          ever(metadataController.metaData, (metadata) {
-            if (metadata != null) {
-              Get.offNamed(Routes.WELCOME);
-            }
-          });
+          print(
+            "SplashController: User not authenticated, showing welcome screen",
+          );
+          _showWelcomeScreen();
         }
-      } else {
-        // Not signed in, get metadata for welcome screen
-        var metadataController = Get.find<WelcomeController>();
-        metadataController.getWelcomeInfo();
+      } catch (e) {
+        print("SplashController: Error during authentication validation: $e");
+        _showWelcomeScreen();
+      }
+    });
+  }
 
-        // Simplified ever listener
-        ever(metadataController.metaData, (metadata) {
-          if (metadata != null) {
-            Get.offNamed(Routes.WELCOME);
-          }
-        });
+  // Helper method to show welcome screen
+  void _showWelcomeScreen() {
+    var metadataController = Get.find<WelcomeController>();
+    metadataController.getWelcomeInfo();
+
+    ever(metadataController.metaData, (metadata) {
+      if (metadata != null) {
+        Get.offNamed(Routes.WELCOME);
       }
     });
   }

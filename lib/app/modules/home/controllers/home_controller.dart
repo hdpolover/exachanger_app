@@ -191,8 +191,11 @@ class HomeController extends BaseController {
                   product.rates!.isNotEmpty &&
                   product.rates!.any((rate) => rate.status == 'active'),
             ),
-          ); // Filter active products with active rates
-          print("All data loaded from DataService");
+          ); // Filter active products with active rates          print("All data loaded from DataService");
+          // Check if we can complete loading after data operations
+          if (isLoading.value) {
+            _checkAndSetLoadingComplete();
+          }
           return;
         }
       } catch (e) {
@@ -364,6 +367,11 @@ class HomeController extends BaseController {
     } catch (e) {
       print("Error in getData: $e");
     }
+
+    // Check if we can complete loading after data operations
+    if (isLoading.value) {
+      _checkAndSetLoadingComplete();
+    }
   }
 
   // Load notifications
@@ -516,12 +524,16 @@ class HomeController extends BaseController {
                   p.rates!.any((rate) => rate.status == 'active'),
             )
             .toList();
-
         if (activeProducts.isNotEmpty) {
           productList.value = activeProducts;
           print("Fetched ${activeProducts.length} active products");
           // Store fetched data in dataService
           dataService?.setData(products: activeProducts);
+
+          // Check if we can complete loading after products are fetched
+          if (isLoading.value) {
+            _checkAndSetLoadingComplete();
+          }
         }
       }
     } catch (e) {
@@ -548,9 +560,38 @@ class HomeController extends BaseController {
       loadUserData().then((_) {
         // Small delay to ensure shimmer is visible even on fast loads
         Future.delayed(Duration(milliseconds: 300), () {
-          isLoading.value = false;
+          // Only set loading to false if we have products or if we've exhausted all loading methods
+          _checkAndSetLoadingComplete();
         });
       });
+    });
+  }
+
+  // Helper method to check if loading should be complete
+  void _checkAndSetLoadingComplete() {
+    // If we have products, loading is complete
+    if (productList.value.isNotEmpty) {
+      isLoading.value = false;
+      print(
+        "Loading complete - products available: ${productList.value.length}",
+      );
+      return;
+    }
+
+    // If DataService is loaded and marked as complete, we can finish loading
+    if (dataService != null && dataService!.dataLoaded.value) {
+      isLoading.value = false;
+      print("Loading complete - DataService marked as loaded");
+      return;
+    }
+
+    // If we still don't have products after all attempts, set a maximum wait time
+    // to prevent infinite loading state
+    Future.delayed(Duration(milliseconds: 1000), () {
+      if (isLoading.value && productList.value.isEmpty) {
+        print("Loading timeout reached - showing empty state if no products");
+        isLoading.value = false;
+      }
     });
   }
 

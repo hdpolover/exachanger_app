@@ -3,10 +3,8 @@ import 'package:exachanger_get_app/app/core/values/app_colors.dart';
 import 'package:exachanger_get_app/app/core/values/text_styles.dart';
 import 'package:exachanger_get_app/app/core/values/app_images.dart';
 import 'package:exachanger_get_app/app/core/widgets/custom_loading_dialog.dart';
-import 'package:exachanger_get_app/app/core/widgets/forgot_password_dialog.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:get/get.dart';
 
@@ -161,7 +159,7 @@ class SignInView extends BaseView<SignInController> {
             alignment: Alignment.centerRight,
             child: InkWell(
               onTap: () {
-                Get.dialog(ForgotPasswordDialog());
+                Get.toNamed(Routes.FORGOT_PASSWORD);
               },
               child: Text(
                 'Forgot Password?',
@@ -183,8 +181,8 @@ class SignInView extends BaseView<SignInController> {
             label: "Sign in with Google",
             icon: Image.asset(
               AppImages.googleLogo,
-              width: 20,
-              height: 20,
+              width: 24,
+              height: 24,
               fit: BoxFit.contain,
             ),
             onPressed: () async {

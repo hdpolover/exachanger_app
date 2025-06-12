@@ -470,7 +470,7 @@ class HomeView extends BaseView<HomeController> {
               ),
             ),
             Obx(() {
-              // Show loading while fetching products
+              // Show loading while fetching products OR if products are empty and we're in initial load
               if (controller.isLoading.value) {
                 return _buildShimmerProductGrid();
               }
@@ -501,8 +501,8 @@ class HomeView extends BaseView<HomeController> {
                 );
               }
 
-              // Empty state
-              if (controller.products.isEmpty) {
+              // Empty state - only show if we're definitely not loading and have no products
+              if (controller.products.isEmpty && !controller.isLoading.value) {
                 return Container(
                   height: 150,
                   padding: EdgeInsets.all(20),

@@ -41,23 +41,18 @@ class SettingItem extends StatelessWidget {
             color: Colors.grey.shade200,
             borderRadius: BorderRadius.circular(96),
           ),
-          child: Icon(
-            icon,
-            size: 20,
-          ),
+          child: Icon(icon, size: 20),
         ),
         title: Text(
           title,
-          style: regularBodyTextStyle.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: regularBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(subtitle, style: smallBodyTextStyle),
         trailing: const Icon(
           Icons.arrow_forward_ios,
           color: Colors.grey,
         ), // iOS style arrow
-        onTap: onTap,
+        onTap: onTap(),
       ),
     );
   }

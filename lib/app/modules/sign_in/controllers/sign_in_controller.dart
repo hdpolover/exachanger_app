@@ -21,22 +21,110 @@ class SignInController extends BaseController {
   final AuthService authService = Get.find<AuthService>();
 
   void doSignIn(Map<String, dynamic> data) {
+    print("SignInController: doSignIn called with data: $data");
     var service = authRepository.getAuthData(data);
 
+    print("SignInController: Starting authentication API call");
     callDataService(
       service,
       onStart: () {
+        print("SignInController: onStart callback called");
         // Custom loading is handled in the view, so we don't need base loading
       },
-      onSuccess: (data) {
+      onSuccess: (data) async {
+        print(
+          "SignInController: onSuccess callback called - AUTHENTICATION SUCCESSFUL!",
+        );
         // Close loading dialog
         Get.back();
 
         // Store signIn data in the controller
         signinData.value = data;
 
-        // Save all user data and tokens
-        preferenceManager.saveUserDataFromSignin(data);
+        print(
+          "SignInController: Sign-in successful for user: ${data.data?.name} (${data.data?.email})",
+        );
+        print("SignInController: User type in response: ${data.data?.type}");
+        print(
+          "SignInController: Access token length: ${data.accessToken?.length ?? 0}",
+        );
+        print(
+          "SignInController: Refresh token length: ${data.refreshToken?.length ?? 0}",
+        );
+
+        // CRITICAL: Clear any old authentication data first to avoid conflicts
+        print(
+          "SignInController: Clearing old authentication data before saving new data",
+        );
+        await preferenceManager.logout(); // This clears old data
+
+        print(
+          "SignInController: Old data cleared, proceeding with new data save",
+        );
+
+        // CRITICAL FIX: For email/password sign-in, manually set type to 0
+        // The server might be returning wrong type, so we override it
+        if (data.data != null) {
+          print(
+            "SignInController: Original user type from server: ${data.data!.type}",
+          );
+          print(
+            "SignInController: Setting user type to 0 for email/password authentication",
+          );
+
+          // Create a new DataModel with the correct type
+          var correctedDataModel = DataModel(
+            id: data.data!.id,
+            email: data.data!.email,
+            name: data.data!.name,
+            role: data.data!.role,
+            type: 0, // Force email/password type
+            permissions: data.data!.permissions,
+            date: data.data!.date,
+            expired: data.data!.expired,
+          );
+
+          // Create a new SigninModel with corrected data
+          data = SigninModel(
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            data: correctedDataModel,
+            expiredIn: data.expiredIn,
+          );
+          print("SignInController: User type corrected to: ${data.data?.type}");
+        }
+
+        // Save all user data and tokens SYNCHRONOUSLY
+        bool saveSuccess = await preferenceManager.saveUserDataFromSignin(data);
+
+        if (saveSuccess) {
+          print("SignInController: User data saved successfully");
+
+          // Ensure AuthService state is properly updated and persisted
+          await authService.ensureTokenPersistence(
+            data.accessToken!,
+            data.refreshToken!,
+            data.data?.email,
+          );
+
+          print("SignInController: AuthService state synchronized");
+        } else {
+          print(
+            "SignInController: CRITICAL ERROR - User data save failed, aborting sign-in",
+          );
+
+          // If save failed, show error and don't proceed
+          Get.snackbar(
+            'Sign In Error',
+            'Failed to save authentication data. Please try again.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+            duration: Duration(seconds: 3),
+            icon: Icon(Icons.error, color: Colors.white),
+          );
+          return; // Don't proceed with navigation
+        }
 
         // Set auth token for API calls
         DioProvider.setAuthToken(data.accessToken!);
@@ -46,6 +134,8 @@ class SignInController extends BaseController {
           authenticated: true,
           email: data.data?.email,
         );
+
+        print("SignInController: Authentication state updated in AuthService");
 
         // Show success message with context-aware messaging
         String welcomeMessage = 'You have successfully signed in.';
@@ -72,7 +162,7 @@ class SignInController extends BaseController {
           forwardAnimationCurve: Curves.easeOutBack,
         );
 
-        // Small delay before navigation for better UX
+        // Small delay before navigation for better UX - but ensure save is complete
         Future.delayed(Duration(milliseconds: 300), () {
           Get.offNamed(Routes.MAIN);
         });

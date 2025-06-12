@@ -5,6 +5,10 @@ abstract class Routes {
   Routes._();
   static const HOME = _Paths.HOME;
   static const PROFILE = _Paths.PROFILE;
+  static const PROFILE_INFORMATION = _Paths.PROFILE_INFORMATION;
+  static const REFERRAL = _Paths.REFERRAL;
+  static const ABOUT_EXACHANGER = _Paths.ABOUT_EXACHANGER;
+  static const FAQS = _Paths.FAQS;
   static const MAIN = _Paths.MAIN;
   static const WELCOME = _Paths.WELCOME;
   static const SPLASH = _Paths.SPLASH;
@@ -22,12 +26,17 @@ abstract class Routes {
   static const HOME_MORE = _Paths.HOME_MORE;
   static const NOTIFICATION = _Paths.NOTIFICATION;
   static const SERVER_ERROR = _Paths.SERVER_ERROR;
+  static const FORGOT_PASSWORD = _Paths.FORGOT_PASSWORD;
 }
 
 abstract class _Paths {
   _Paths._();
   static const HOME = '/home';
   static const PROFILE = '/profile';
+  static const PROFILE_INFORMATION = '/profile-information';
+  static const REFERRAL = '/referral';
+  static const ABOUT_EXACHANGER = '/about-exachanger';
+  static const FAQS = '/faqs';
   static const MAIN = '/main';
   static const WELCOME = '/welcome';
   static const SPLASH = '/splash';
@@ -45,4 +54,5 @@ abstract class _Paths {
   static const HOME_MORE = '/home-more';
   static const NOTIFICATION = '/notification';
   static const SERVER_ERROR = '/server-error';
+  static const FORGOT_PASSWORD = '/forgot-password';
 }
