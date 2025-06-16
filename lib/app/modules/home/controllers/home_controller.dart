@@ -769,9 +769,8 @@ class HomeController extends BaseController {
     if (changed) {
       loadNotifications();
     }
-  }
+  } // Clear all notification filters
 
-  // Clear all notification filters
   void clearNotificationFilters() {
     notificationTitleFilter.value = '';
     notificationType.value = '';

@@ -183,13 +183,11 @@ class ProceedExchangeView extends BaseView<ExchangeController> {
       );
       if (isBlockchainReceiveProduct) {
         print('Using blockchain fee calculation for receive product'); // Debug
-      }
-
-      // Calculate received amount after fee deduction from send amount
-      double amountAfterFee = amount - fee;
-      double receivedAmount = amountAfterFee * exchangeRate;
+      } // Calculate conversion first, then subtract fee from converted amount
+      double convertedAmount = amount * exchangeRate;
+      double receivedAmount = convertedAmount - fee;
       print(
-        'Received amount: $receivedAmount (after fee: $amountAfterFee × rate: $exchangeRate)',
+        'Received amount: $receivedAmount (converted: $convertedAmount - fee: $fee)',
       ); // Debug
 
       controller.setCalculatedAmount(receivedAmount);
@@ -505,14 +503,13 @@ class ProceedExchangeView extends BaseView<ExchangeController> {
                             receiveRate,
                             selectedBlockchain,
                           );
-
                       if (isBlockchainReceiveProduct &&
                           selectedBlockchain != null) {
                         feeSourceText =
-                            'This fee is charged by ${selectedBlockchain.name ?? 'the selected blockchain'} and will be deducted from your send amount.';
+                            'This fee is charged by ${selectedBlockchain.name ?? 'the selected blockchain'} and will be deducted from the converted amount.';
                       } else {
                         feeSourceText =
-                            'This fee is charged by ${receiveRate.product?.name ?? 'the receive product'} and will be deducted from your send amount.';
+                            'This fee is charged by ${receiveRate.product?.name ?? 'the receive product'} and will be deducted from the converted amount.';
                       }
                     }
 
@@ -631,7 +628,6 @@ class ProceedExchangeView extends BaseView<ExchangeController> {
                         );
                         final feeValue = feeValues['feeValue'];
                         final feeType = feeValues['feeType'];
-
                         return Column(
                           children: [
                             Text(
@@ -648,17 +644,17 @@ class ProceedExchangeView extends BaseView<ExchangeController> {
                               '\$${inputAmount.toStringAsFixed(2)}',
                             ),
                             _buildBreakdownRow(
-                              'Fee Deducted:',
-                              '-\$${calculateFee(feeValue, feeType, inputAmount).toStringAsFixed(2)}',
+                              'Exchange Rate:',
+                              '× ${receiveRate.pricing?.toString() ?? '0.99'}',
                             ),
                             Divider(height: 8, color: Colors.blue.shade300),
                             _buildBreakdownRow(
-                              'Amount After Fee:',
-                              '\$${(inputAmount - calculateFee(feeValue, feeType, inputAmount)).toStringAsFixed(2)}',
+                              'Converted Amount:',
+                              '\$${(inputAmount * (double.tryParse(receiveRate.pricing?.toString() ?? '0.99') ?? 0.99)).toStringAsFixed(2)}',
                             ),
                             _buildBreakdownRow(
-                              'Exchange Rate:',
-                              '× ${receiveRate.pricing?.toString() ?? '0.99'}',
+                              'Fee Deducted:',
+                              '-\$${calculateFee(feeValue, feeType, inputAmount).toStringAsFixed(2)}',
                             ),
                             Divider(height: 8, color: Colors.blue.shade300),
                             _buildBreakdownRow(

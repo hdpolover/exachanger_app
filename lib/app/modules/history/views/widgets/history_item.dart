@@ -12,7 +12,6 @@ class HistoryItem extends StatelessWidget {
   const HistoryItem({super.key, this.onTap, required this.transaction});
 
   final VoidCallback? onTap;
-
   _productView(String url, String name) {
     print('url: $url');
 
@@ -21,13 +20,14 @@ class HistoryItem extends StatelessWidget {
         CachedNetworkImage(
           imageUrl: url,
           errorWidget: (context, url, error) =>
-              Image.asset(AppImages.logo, width: 15),
-          width: 15,
+              Image.asset(AppImages.logo, width: 32),
+          width: 32,
+          height: 32,
         ),
-        SizedBox(width: 5),
+        SizedBox(width: 12),
         Text(
           name,
-          style: extraSmallBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+          style: bigBodyTextStyle.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -39,36 +39,41 @@ class HistoryItem extends StatelessWidget {
     From from = transaction.products![0].productMeta!.from!;
     To to = transaction.products![0].productMeta!.to!;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Row(
                   children: [
                     _productView(from.image!, from.name!),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Icon(Icons.arrow_forward, size: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Icon(
+                        Icons.arrow_forward,
+                        size: 28,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                     _productView(to.product!.image!, to.product!.name!),
                   ],
                 ),
-                StatusChip(status: status),
-              ],
-            ),
-            Text(
-              CommonFunctions.formatDateTime(DateTime.now()),
-              style: extraSmallBodyTextStyle.copyWith(color: Colors.grey),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
-      ],
+              ),
+              StatusChip(status: status),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            CommonFunctions.formatDateTime(DateTime.now()),
+            style: regularBodyTextStyle.copyWith(color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 
@@ -162,7 +167,7 @@ class HistoryItem extends StatelessWidget {
           ],
         ),
         child: Column(
-          children: [_topSection(), SizedBox(height: 10), _bottomSection()],
+          children: [_topSection(), SizedBox(height: 16), _bottomSection()],
         ),
       ),
     );

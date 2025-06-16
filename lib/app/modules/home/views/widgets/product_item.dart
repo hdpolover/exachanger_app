@@ -10,11 +10,15 @@ class ProductItem extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isMore;
   final ProductModel? product;
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Calculate responsive sizes based on available space
+        final itemWidth = constraints.maxWidth;
+        final imageSize = itemWidth * 0.6; // Image takes 60% of item width
+        final fontSize = itemWidth * 0.12; // Font size scales with item width
+
         return Container(
           constraints: BoxConstraints(
             minWidth: 60,
@@ -23,7 +27,7 @@ class ProductItem extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(itemWidth * 0.08), // Responsive padding
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -31,8 +35,8 @@ class ProductItem extends StatelessWidget {
                 children: [
                   Expanded(
                     child: SizedBox(
-                      width: 45,
-                      height: 45,
+                      width: imageSize,
+                      height: imageSize,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: isMore
@@ -57,10 +61,17 @@ class ProductItem extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(4.0),
+                    padding: EdgeInsets.all(
+                      itemWidth * 0.04,
+                    ), // Responsive padding
                     child: Text(
                       isMore ? "More" : product?.name ?? 'Product',
-                      style: smallBodyTextStyle,
+                      style: smallBodyTextStyle.copyWith(
+                        fontSize: fontSize.clamp(
+                          8.0,
+                          12.0,
+                        ), // Clamp font size between 8-12
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,

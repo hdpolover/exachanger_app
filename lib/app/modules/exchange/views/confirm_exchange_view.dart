@@ -41,206 +41,172 @@ class ConfirmExchangeView extends BaseView<ExchangeController> {
     // Always show confirmation dialog, regardless of transaction ID
     // Users should be warned before leaving this confirmation page
     final result = await Get.dialog<bool>(
-      AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: EdgeInsets.zero,
-        content: Container(
-          width: double.maxFinite,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.red.shade50, Colors.white],
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: SafeArea(
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: 420,
+              maxHeight: MediaQuery.of(Get.context!).size.height * 0.8,
             ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header with icon and title
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.fromLTRB(24, 32, 24, 16),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.cancel_outlined,
-                        color: Colors.red.shade600,
-                        size: 40,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Cancel Transaction?',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'You\'re about to cancel your exchange',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
+            margin: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
                 ),
-              ),
-
-              // Warning content
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Container(
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.red.shade200, width: 1),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+              ],
+            ),
+            child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header with icon and title
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.fromLTRB(32, 40, 32, 24),
+                      child: Column(
                         children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.red.shade600,
-                            size: 20,
+                          Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.warning_rounded,
+                              color: Colors.red.shade600,
+                              size: 36,
+                            ),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(height: 16),
                           Text(
-                            'What happens when you cancel:',
+                            'Cancel Transaction?',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: Colors.red.shade700,
-                              fontSize: 16,
+                              color: Colors.black87,
+                              height: 1.2,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'You\'re about to cancel your exchange transaction',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey.shade600,
+                              height: 1.3,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 16),
-                      _buildWarningItem(
-                        'Your transaction will be permanently deleted',
-                        Icons.delete_forever_outlined,
+                    ), // Warning content
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 28),
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.red.shade200,
+                          width: 1,
+                        ),
                       ),
-                      SizedBox(height: 12),
-                      _buildWarningItem(
-                        'You\'ll need to start a new exchange from scratch',
-                        Icons.restart_alt_outlined,
-                      ),
-                      SizedBox(height: 12),
-                      _buildWarningItem(
-                        'This action cannot be undone',
-                        Icons.warning_amber_outlined,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Message
-              Container(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Are you sure you want to cancel this transaction?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-
-              // Action buttons
-              Container(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 32),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 52,
-                        child: OutlinedButton(
-                          onPressed: () => Get.back(result: false),
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            side: BorderSide(
-                              color: Theme.of(Get.context!).primaryColor,
-                              width: 2,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
                               Icon(
-                                Icons.arrow_back_ios,
-                                size: 16,
-                                color: Theme.of(Get.context!).primaryColor,
+                                Icons.info_outline_rounded,
+                                color: Colors.red.shade600,
+                                size: 20,
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Go Back',
-                                style: TextStyle(
-                                  color: Theme.of(Get.context!).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'What happens when you cancel:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red.shade700,
+                                    fontSize: 15,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
+                          SizedBox(height: 16),
+                          _buildWarningItem(
+                            'Transaction will be permanently deleted',
+                            Icons.delete_forever_rounded,
+                          ),
+                          SizedBox(height: 10),
+                          _buildWarningItem(
+                            'You\'ll need to start over completely',
+                            Icons.restart_alt_rounded,
+                          ),
+                          SizedBox(height: 10),
+                          _buildWarningItem(
+                            'This action cannot be undone',
+                            Icons.block_rounded,
+                          ),
+                        ],
+                      ),
+                    ), // Confirmation message
+                    Container(
+                      padding: EdgeInsets.fromLTRB(32, 24, 32, 28),
+                      child: Text(
+                        'Are you sure you want to proceed with canceling this transaction?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                          fontSize: 15,
+                          height: 1.4,
                         ),
                       ),
                     ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Container(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: () => Get.back(result: true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade600,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+
+                    // Action buttons - responsive layout
+                    Container(
+                      padding: EdgeInsets.fromLTRB(28, 0, 28, 32),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Use column layout for very small screens
+                          if (constraints.maxWidth < 300) {
+                            return Column(
+                              children: [
+                                _buildGoBackButton(),
+                                SizedBox(height: 16),
+                                _buildCancelButton(),
+                              ],
+                            );
+                          }
+                          // Use row layout for larger screens
+                          return Row(
                             children: [
-                              Icon(Icons.cancel_outlined, size: 18),
-                              SizedBox(width: 8),
-                              Text(
-                                'Yes, Cancel',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
+                              Expanded(child: _buildGoBackButton()),
+                              SizedBox(width: 16),
+                              Expanded(child: _buildCancelButton()),
                             ],
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -820,57 +786,6 @@ Thank you'''; // Admin's phone number (including country code without +)
                         ),
                       ],
                     ),
-                    // Transaction ID (Database ID)
-                    if (transaction.id != null &&
-                        transaction.id!.isNotEmpty) ...[
-                      SizedBox(height: 12),
-                      Text(
-                        'Transaction ID',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              transaction.id!,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[700],
-                                fontFamily: 'monospace',
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              Clipboard.setData(
-                                ClipboardData(text: transaction.id!),
-                              );
-                              Get.snackbar(
-                                'Copied',
-                                'Transaction ID copied to clipboard',
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.green,
-                                colorText: Colors.white,
-                                duration: Duration(seconds: 2),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.copy,
-                              color: Colors.grey[600],
-                              size: 18,
-                            ),
-                            constraints: BoxConstraints(),
-                            padding: EdgeInsets.all(8),
-                          ),
-                        ],
-                      ),
-                    ],
                     SizedBox(height: 8),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1020,14 +935,72 @@ Thank you'''; // Admin's phone number (including country code without +)
                 ),
               ],
             ),
-            SizedBox(height: 16),
-
-            // Pay to Section
+            SizedBox(height: 16), // Pay to Section
             Text(
               'Pay to',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             SizedBox(height: 8),
+
+            // Instructions for payment
+            Container(
+              padding: EdgeInsets.all(12),
+              margin: EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.blue.shade700,
+                        size: 20,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Payment Instructions',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'To complete your transaction, send the exact amount shown above to the account details below. Make sure to use the exact amount to avoid processing delays.',
+                    style: TextStyle(
+                      color: Colors.blue.shade600,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '⚠️ Important: Send payment to the account below only',
+                      style: TextStyle(
+                        color: Colors.orange.shade700,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             _buildPayToSection(transaction, sendProduct),
 
             SizedBox(height: 24),
@@ -1318,61 +1291,206 @@ Thank you'''; // Admin's phone number (including country code without +)
           ],
         ),
       );
-    }
-
-    // Determine payment method info based on transfer data type and product
+    } // Determine payment method info based on transfer data type and product
     String paymentMethodName = _getPaymentMethodName(transferData, sendProduct);
-    String paymentMethodIcon = _getPaymentMethodIcon(transferData, sendProduct);
     Color paymentMethodColor = _getPaymentMethodColor(
       transferData,
       sendProduct,
     );
     String copyLabel = _getCopyLabel(transferData);
-
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 40,
-          height: 40,
-          color: paymentMethodColor,
-          child: Center(
-            child: Text(
-              paymentMethodIcon,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            paymentMethodColor.withOpacity(0.1),
+            paymentMethodColor.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: paymentMethodColor.withOpacity(0.4),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: paymentMethodColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Payment method header
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: paymentMethodColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  paymentMethodName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
               ),
+              Spacer(),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.verified,
+                      color: Colors.green.shade700,
+                      size: 16,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Official Account',
+                      style: TextStyle(
+                        color: Colors.green.shade700,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 16),
+
+          // Payment details
+          Text(
+            copyLabel.toUpperCase(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+              letterSpacing: 0.5,
             ),
           ),
-        ),
-      ),
-      title: Text(paymentMethodName),
-      subtitle: Text(
-        transferData is Map
-            ? (transferData['value'] ?? '')
-            : transferData.value ?? '',
-        style: TextStyle(fontFamily: 'monospace', fontSize: 12),
-      ),
-      trailing: TextButton.icon(
-        onPressed: () {
-          String value = transferData is Map
-              ? (transferData['value'] ?? '')
-              : transferData.value ?? '';
-          Clipboard.setData(ClipboardData(text: value));
-          Get.snackbar(
-            'Copied',
-            '$copyLabel copied to clipboard',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            duration: Duration(seconds: 2),
-          );
-        },
-        icon: Icon(Icons.copy, size: 16),
-        label: Text('Copy', style: TextStyle(fontSize: 12)),
+          SizedBox(height: 8),
+
+          // Payment value with prominent styling
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transferData is Map
+                      ? (transferData['value'] ?? '')
+                      : transferData.value ?? '',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 12),
+
+                // Copy button - more prominent
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      String value = transferData is Map
+                          ? (transferData['value'] ?? '')
+                          : transferData.value ?? '';
+                      Clipboard.setData(ClipboardData(text: value));
+                      Get.snackbar(
+                        'Copied!',
+                        '$copyLabel copied to clipboard',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.green,
+                        colorText: Colors.white,
+                        duration: Duration(seconds: 2),
+                        icon: Icon(Icons.check_circle, color: Colors.white),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: paymentMethodColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    icon: Icon(Icons.content_copy, size: 18),
+                    label: Text(
+                      'Copy ${copyLabel}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 12),
+
+          // Security notice
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.amber.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.amber.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.security, color: Colors.amber.shade700, size: 18),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Double-check this account before sending payment',
+                    style: TextStyle(
+                      color: Colors.amber.shade700,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1415,42 +1533,6 @@ Thank you'''; // Admin's phone number (including country code without +)
     }
 
     return 'Payment Method';
-  }
-
-  String _getPaymentMethodIcon(dynamic transferData, dynamic sendProduct) {
-    // Get the type from transferData (either Map or object)
-    String? type = transferData is Map
-        ? transferData['type']
-        : transferData?.type;
-    String? productName = sendProduct is Map
-        ? sendProduct['name']
-        : sendProduct?.name;
-
-    // Check transfer data type first
-    if (type?.toLowerCase() == 'email') {
-      return 'P';
-    }
-    if (type?.toLowerCase() == 'address') {
-      if (productName?.toLowerCase().contains('btc') == true) {
-        return '₿';
-      }
-      if (productName?.toLowerCase().contains('usdt') == true) {
-        return 'T';
-      }
-      if (productName?.toLowerCase().contains('usdc') == true) {
-        return 'C';
-      }
-      return '₿';
-    }
-    if (type?.toLowerCase() == 'phone') {
-      return '📱';
-    }
-    if (type?.toLowerCase() == 'bank') {
-      return '🏦';
-    }
-
-    // Fallback
-    return 'P';
   }
 
   Color _getPaymentMethodColor(dynamic transferData, dynamic sendProduct) {
@@ -1521,22 +1603,94 @@ Thank you'''; // Admin's phone number (including country code without +)
           child: Icon(
             icon ?? Icons.circle,
             color: Colors.red.shade600,
-            size: icon != null ? 20 : 6,
+            size: icon != null ? 18 : 6,
           ),
         ),
-        SizedBox(width: 12),
+        SizedBox(width: 10),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               color: Colors.red.shade700,
-              fontSize: 15,
-              height: 1.4,
+              fontSize: 14,
+              height: 1.3,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildGoBackButton() {
+    return Container(
+      height: 48,
+      child: OutlinedButton(
+        onPressed: () => Get.back(result: false),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          side: BorderSide(
+            color: Theme.of(Get.context!).primaryColor,
+            width: 2,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: FittedBox(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.arrow_back_ios_rounded,
+                size: 16,
+                color: Theme.of(Get.context!).primaryColor,
+              ),
+              SizedBox(width: 4),
+              Text(
+                'Go Back',
+                style: TextStyle(
+                  color: Theme.of(Get.context!).primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCancelButton() {
+    return Container(
+      height: 48,
+      child: ElevatedButton(
+        onPressed: () => Get.back(result: true),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red.shade600,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: FittedBox(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cancel_rounded, size: 16),
+              SizedBox(width: 6),
+              Text(
+                'Yes, Cancel',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

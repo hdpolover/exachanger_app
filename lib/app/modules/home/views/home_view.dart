@@ -37,51 +37,59 @@ class HomeView extends BaseView<HomeController> {
   Widget _buildShimmerProductGrid() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 5, 10, 20),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 100,
-          childAspectRatio: 0.8,
-          crossAxisSpacing: 5,
-          mainAxisSpacing: 5,
-        ),
-        itemCount: 8, // Show 8 shimmer items
-        itemBuilder: (context, index) {
-          return Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: Container(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Container(
-                      width: 60,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final spacing = constraints.maxWidth * 0.01;
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 0.8,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
             ),
+            itemCount: 8, // Show 8 shimmer items
+            itemBuilder: (context, index) {
+              final itemWidth = (constraints.maxWidth - (spacing * 3) - 20) / 4;
+              final imageSize = itemWidth * 0.6;
+
+              return Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: imageSize,
+                          height: imageSize,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Container(
+                          width: itemWidth * 0.8,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
@@ -331,40 +339,35 @@ class HomeView extends BaseView<HomeController> {
 
   @override
   Widget body(BuildContext context) {
-    return GetBuilder<HomeController>(
-      builder: (controller) {
-        if (controller.isClosed) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    if (controller.isClosed) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-        return Obx(
-          () => SmartRefresher(
-            key: const ValueKey('home_smart_refresher'),
-            controller: controller.refreshController,
-            onRefresh: controller.onRefresh,
-            enablePullDown: true,
-            enablePullUp: false,
-            physics: const BouncingScrollPhysics(),
-            header: WaterDropMaterialHeader(
-              backgroundColor: AppColors.colorPrimary,
-              color: Colors.white,
-              distance: 40.0,
-            ),
-            child: ListView(
-              children: [
-                _topSection(),
-                _exchangeSection(),
-                // Show the transaction section when loading or if there are transactions
-                if (controller.isLoading.value ||
-                    controller.transactions.isNotEmpty)
-                  _transactionSection(),
-                _whatsnewSection(),
-                _newsSection(),
-              ],
-            ),
-          ),
-        );
-      },
+    return SmartRefresher(
+      controller: controller.refreshController,
+      onRefresh: controller.onRefresh,
+      enablePullDown: true,
+      enablePullUp: false,
+      physics: const BouncingScrollPhysics(),
+      header: WaterDropMaterialHeader(
+        backgroundColor: AppColors.colorPrimary,
+        color: Colors.white,
+        distance: 40.0,
+      ),
+      child: Obx(
+        () => ListView(
+          children: [
+            _topSection(),
+            _exchangeSection(),
+            // Show the transaction section when loading or if there are transactions
+            if (controller.isLoading.value ||
+                controller.transactions.isNotEmpty)
+              _transactionSection(),
+            _whatsnewSection(),
+            _newsSection(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -516,55 +519,60 @@ class HomeView extends BaseView<HomeController> {
               }
 
               // Products grid
-              return GridView.builder(
-                padding: EdgeInsets.fromLTRB(10, 5, 10, 20),
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 100, // Maximum width per item
-                  childAspectRatio: 0.8, // Adjust based on content
-                  crossAxisSpacing: 5,
-                  mainAxisSpacing: 5,
-                ),
-                itemCount: controller.products.length > 7
-                    ? 8 // Show 7 products + "More" button
-                    : controller.products.length +
-                          1, // All products + "More" button
-                itemBuilder: (context, index) {
-                  // If this is the last item and we have 7 or more products, or if we have fewer products and this is the last one
-                  bool isLastItem =
-                      (controller.products.length > 7 && index == 7) ||
-                      (controller.products.length <= 7 &&
-                          index == controller.products.length);
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final spacing = constraints.maxWidth * 0.01;
+                  return GridView.builder(
+                    padding: EdgeInsets.fromLTRB(10, 5, 10, 20),
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      childAspectRatio: 0.8,
+                      crossAxisSpacing: spacing,
+                      mainAxisSpacing: spacing,
+                    ),
+                    itemCount: controller.products.length > 7
+                        ? 8 // Show 7 products + "More" button
+                        : controller.products.length +
+                              1, // All products + "More" button
+                    itemBuilder: (context, index) {
+                      // If this is the last item and we have 7 or more products, or if we have fewer products and this is the last one
+                      bool isLastItem =
+                          (controller.products.length > 7 && index == 7) ||
+                          (controller.products.length <= 7 &&
+                              index == controller.products.length);
 
-                  if (isLastItem) {
-                    return ProductItem(
-                      onTap: () {
-                        // Navigate to all products page using named route
-                        Get.toNamed(Routes.HOME_MORE);
-                      },
-                      isMore: true,
-                    );
-                  }
-
-                  return ProductItem(
-                    product: controller.products[index],
-                    onTap: () {
-                      // Navigate to exchange page with the product data in a map with a flag
-                      print(
-                        "Navigating to exchange with product: ${controller.products[index].name}",
-                      );
-                      // Force delete any existing controller before navigating to ensure a fresh state
-                      if (Get.isRegistered<ExchangeController>()) {
-                        Get.delete<ExchangeController>(force: true);
+                      if (isLastItem) {
+                        return ProductItem(
+                          onTap: () {
+                            // Navigate to all products page using named route
+                            Get.toNamed(Routes.HOME_MORE);
+                          },
+                          isMore: true,
+                        );
                       }
 
-                      // Navigate to exchange with the selected product
-                      Get.toNamed(
-                        Routes.EXCHANGE,
-                        arguments: {
-                          'fixedProduct': controller.products[index],
-                          'fromHome': true,
+                      return ProductItem(
+                        product: controller.products[index],
+                        onTap: () {
+                          // Navigate to exchange page with the product data in a map with a flag
+                          print(
+                            "Navigating to exchange with product: ${controller.products[index].name}",
+                          );
+                          // Force delete any existing controller before navigating to ensure a fresh state
+                          if (Get.isRegistered<ExchangeController>()) {
+                            Get.delete<ExchangeController>(force: true);
+                          }
+
+                          // Navigate to exchange with the selected product
+                          Get.toNamed(
+                            Routes.EXCHANGE,
+                            arguments: {
+                              'fixedProduct': controller.products[index],
+                              'fromHome': true,
+                            },
+                          );
                         },
                       );
                     },
