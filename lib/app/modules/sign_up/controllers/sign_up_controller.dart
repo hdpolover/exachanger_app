@@ -1,5 +1,6 @@
 import 'package:exachanger_get_app/app/core/base/base_controller.dart';
 import 'package:exachanger_get_app/app/data/repository/auth/auth_repository.dart';
+import 'package:exachanger_get_app/app/data/models/signup_response_model.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:exachanger_get_app/app/network/exceptions/api_exception.dart';
 import 'package:flutter/material.dart';
@@ -43,29 +44,38 @@ class SignUpController extends BaseController {
       onStart: () {
         // Custom loading is handled in the view
       },
-      onSuccess: (response) {
+      onSuccess: (SignUpResponseModel response) {
         // Close loading dialog
         Get.back();
 
-        // Show success message
-        Get.snackbar(
-          'Welcome!',
-          'Your account has been created successfully!',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: Duration(seconds: 3), // Slightly increased duration
-          icon: Icon(Icons.check_circle, color: Colors.white),
-          margin: EdgeInsets.all(16), // Add margins for better spacing
-          borderRadius: 8, // Add border radius for better appearance
-          isDismissible: true, // Allow manual dismissal
-          forwardAnimationCurve: Curves.easeOutBack,
-        );
+        // Check if we have a signature for PIN setup
+        if (response.data?.signature != null &&
+            response.data!.signature!.isNotEmpty) {
+          // Navigate to setup PIN with signature
+          Get.offAndToNamed(
+            Routes.SETUP_PIN,
+            arguments: {'signature': response.data!.signature!},
+          );
+        } else {
+          // Fallback: show success and go to sign-in
+          Get.snackbar(
+            'Welcome!',
+            'Your account has been created successfully! Please sign in.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            duration: Duration(seconds: 3),
+            icon: Icon(Icons.check_circle, color: Colors.white),
+            margin: EdgeInsets.all(16),
+            borderRadius: 8,
+            isDismissible: true,
+            forwardAnimationCurve: Curves.easeOutBack,
+          );
 
-        // Small delay before navigation for better UX
-        Future.delayed(Duration(milliseconds: 300), () {
-          Get.offAndToNamed(Routes.SIGN_IN);
-        });
+          Future.delayed(Duration(milliseconds: 300), () {
+            Get.offAndToNamed(Routes.SIGN_IN);
+          });
+        }
       },
       onError: (error) {
         // Close loading dialog

@@ -3,6 +3,7 @@ import 'package:exachanger_get_app/app/services/firebase_auth_service.dart';
 import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
 import 'package:exachanger_get_app/app/routes/app_pages.dart';
 import 'package:exachanger_get_app/app/network/dio_provider.dart';
+import 'package:exachanger_get_app/app/core/base/base_remote_source.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:exachanger_get_app/app/data/models/user_model.dart';
@@ -122,6 +123,11 @@ class AuthService extends GetxService {
     // The persistent storage should only be updated by PreferenceManager methods
     isAuthenticated.value = authenticated;
     currentUserEmail.value = email;
+
+    // Reset authentication error flag when user successfully authenticates
+    if (authenticated) {
+      BaseRemoteSource.resetAuthErrorFlag();
+    }
 
     print("AuthService: updateAuthState completed - MEMORY STATE ONLY");
     print("- Current authenticated state: ${isAuthenticated.value}");

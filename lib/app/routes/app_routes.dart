@@ -14,6 +14,7 @@ abstract class Routes {
   static const SPLASH = _Paths.SPLASH;
   static const SIGN_IN = _Paths.SIGN_IN;
   static const SIGN_UP = _Paths.SIGN_UP;
+  static const SETUP_PIN = _Paths.SETUP_PIN;
   static const HISTORY = _Paths.HISTORY;
   static const BLOG = _Paths.BLOG;
   static const BLOG_DETAIL = _Paths.BLOG_DETAIL;
@@ -42,6 +43,7 @@ abstract class _Paths {
   static const SPLASH = '/splash';
   static const SIGN_IN = '/sign-in';
   static const SIGN_UP = '/sign-up';
+  static const SETUP_PIN = '/setup-pin';
   static const HISTORY = '/history';
   static const BLOG = '/blog';
   static const BLOG_DETAIL = '/blog-detail';

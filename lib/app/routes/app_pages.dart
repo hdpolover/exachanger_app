@@ -37,6 +37,8 @@ import '../modules/sign_in/bindings/sign_in_binding.dart';
 import '../modules/sign_in/views/sign_in_view.dart';
 import '../modules/sign_up/bindings/sign_up_binding.dart';
 import '../modules/sign_up/views/sign_up_view.dart';
+import '../modules/setup_pin/bindings/setup_pin_binding.dart';
+import '../modules/setup_pin/views/setup_pin_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
 import '../modules/transaction_detail/bindings/transaction_detail_binding.dart';
@@ -98,6 +100,11 @@ class AppPages {
       name: _Paths.SIGN_UP,
       page: () => SignUpView(),
       binding: SignUpBinding(),
+    ),
+    GetPage(
+      name: _Paths.SETUP_PIN,
+      page: () => SetupPinView(),
+      binding: SetupPinBinding(),
     ),
     GetPage(
       name: _Paths.HISTORY,

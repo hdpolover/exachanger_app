@@ -38,6 +38,7 @@ class ConfirmExchangeView extends BaseView<ExchangeController> {
   Future<void> _handleBackPressed(BuildContext context) async {
     final args = Get.arguments as Map<String, dynamic>?;
     final transaction = args?['transaction'] as TransactionModel?;
+
     // Always show confirmation dialog, regardless of transaction ID
     // Users should be warned before leaving this confirmation page
     final result = await Get.dialog<bool>(

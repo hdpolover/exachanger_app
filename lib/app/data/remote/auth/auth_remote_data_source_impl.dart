@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:exachanger_get_app/app/data/models/api_response_model.dart';
+import 'package:exachanger_get_app/app/data/models/signup_response_model.dart';
 import 'package:exachanger_get_app/app/services/firebase_auth_service.dart';
 import 'package:exachanger_get_app/app/data/local/preference/preference_manager_impl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +21,22 @@ class UserRegistrationException implements Exception {
 
   @override
   String toString() => 'UserRegistrationException: $message';
+}
+
+// Custom exception for new user registration that requires PIN setup
+class NewUserRegistrationException implements Exception {
+  final String message;
+  final String signature;
+
+  NewUserRegistrationException(this.message, this.signature) {
+    print(
+      '🔍 NewUserRegistrationException: Created with message="$message", signature="$signature"',
+    );
+  }
+
+  @override
+  String toString() =>
+      'NewUserRegistrationException: $message [signature:$signature]';
 }
 
 class AuthRemoteDataSourceImpl extends BaseRemoteSource
@@ -49,21 +66,90 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
 
   @override
   Future<SigninModel> signIn(Map<String, dynamic> data) async {
+    print('🔍 AuthRemoteDataSource: signIn called with data: $data');
+
     // Check if this is a Firebase auth request (type 1 = Google)
     if (data['type'] == 1) {
+      print('🔍 AuthRemoteDataSource: Taking Google sign-in flow path');
       return await _handleGoogleSignInFlow(data);
     } else {
+      print(
+        '🔍 AuthRemoteDataSource: Taking regular email/password sign-in flow path',
+      );
       // Regular email/password sign-in: Use only API endpoint /auth/sign-in (NO Firebase)
       var endpoint = "${DioProvider.baseUrl}/${AppEndpoints.signin}";
       var dioCall = dioClient.post(endpoint, data: jsonEncode(data));
 
       try {
-        return callApiWithErrorParser(dioCall).then(
-          (response) => SigninModel.fromJson(
-            ApiResponseModel.fromJson(response.data).data,
-          ),
+        final response = await callApiWithErrorParser(
+          dioCall,
+        ); // Check if this is a 202 response indicating PIN setup is required
+        if (response.statusCode == 202) {
+          // Extract signature from 202 response for PIN setup
+          String signature = '';
+          try {
+            final responseData = response.data;
+            print('🔍 [Regular Sign-In] 202 Response data: $responseData');
+            print(
+              '🔍 [Regular Sign-In] Response data type: ${responseData.runtimeType}',
+            );
+
+            if (responseData is Map<String, dynamic> &&
+                responseData.containsKey('data')) {
+              final dataField = responseData['data'];
+              print('🔍 [Regular Sign-In] Data field: $dataField');
+              print(
+                '🔍 [Regular Sign-In] Data field type: ${dataField.runtimeType}',
+              );
+
+              if (dataField is Map<String, dynamic>) {
+                print(
+                  '🔍 [Regular Sign-In] Data field keys: ${dataField.keys.toList()}',
+                );
+                // The signature is the key of the data map
+                signature = dataField.keys.first;
+                print('🔍 [Regular Sign-In] Extracted signature: "$signature"');
+              } else if (dataField is String) {
+                // Fallback if it's directly a string
+                signature = dataField;
+                print(
+                  '🔍 [Regular Sign-In] Using data field as signature: "$signature"',
+                );
+              }
+            } else {
+              print(
+                '🔍 [Regular Sign-In] Response data does not contain data field',
+              );
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('🚨 Error extracting signature from 202 response: $e');
+            }
+          }
+          print(
+            '🔍 [Regular Sign-In] Final signature before exception: "$signature"',
+          );
+
+          // Throw custom exception with signature for PIN setup flow
+          print(
+            '🔍 [Regular Sign-In] Creating NewUserRegistrationException with signature: "$signature"',
+          );
+          throw NewUserRegistrationException(
+            'User exists but PIN setup is required.',
+            signature,
+          );
+        }
+
+        // Normal 200 response - parse as SigninModel
+        return SigninModel.fromJson(
+          ApiResponseModel.fromJson(response.data).data,
         );
       } catch (e) {
+        // If it's already our custom exception, rethrow it
+        if (e is NewUserRegistrationException) {
+          rethrow;
+        }
+        // For all other errors, rethrow so they can be handled by the calling code
         rethrow;
       }
     }
@@ -100,24 +186,39 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
       if (kDebugMode) {
         print('🔍 Checking if user exists in backend...');
       }
-
       try {
         return await _attemptBackendSignIn(user, idToken, originalData);
       } catch (signInError) {
-        // Step 3: If sign-in fails, try to register the user
+        // If it's a PIN setup required exception, rethrow immediately (don't try to register)
+        if (signInError is NewUserRegistrationException) {
+          rethrow;
+        }
+
+        // Step 3: If sign-in fails for other reasons, try to register the user
         if (kDebugMode) {
           print('👤 User not found in backend, attempting registration...');
         }
-
         try {
-          await _registerGoogleUser(user, idToken, originalData);
+          final signature = await _registerGoogleUser(
+            user,
+            idToken,
+            originalData,
+          );
 
           if (kDebugMode) {
-            print('✅ User registration successful, now signing in...');
+            print('✅ User registration successful, signature received');
           }
 
-          // Step 4: After successful registration, sign in the user
-          return await _attemptBackendSignIn(user, idToken, originalData);
+          // Throw special exception that includes signature for PIN setup
+          if (signature != null && signature.isNotEmpty) {
+            throw NewUserRegistrationException(
+              'New user registered successfully. PIN setup required.',
+              signature,
+            );
+          } else {
+            // Step 4: After successful registration, sign in the user (fallback)
+            return await _attemptBackendSignIn(user, idToken, originalData);
+          }
         } catch (registerError) {
           if (kDebugMode) {
             print('❌ Registration failed: $registerError');
@@ -149,9 +250,7 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
     } catch (e) {
       if (kDebugMode) {
         print('❌ Google sign-in flow failed: $e');
-      }
-
-      // Check if this is a PigeonUserDetails error and pass it through for retry
+      } // Check if this is a PigeonUserDetails error and pass it through for retry
       String errorStr = e.toString();
       if (errorStr.contains('PigeonUserDetails') ||
           errorStr.contains(
@@ -161,6 +260,11 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
             'Google Sign-In failed due to a plugin compatibility issue',
           )) {
         // Rethrow original error for potential retry at higher level
+        rethrow;
+      }
+
+      // If it's a NewUserRegistrationException, rethrow it directly (don't wrap it)
+      if (e is NewUserRegistrationException) {
         rethrow;
       }
 
@@ -184,17 +288,84 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
       'firebase_uid': user.uid,
       'firebase_token': idToken,
     };
-
     var dioCall = dioClient.post(endpoint, data: jsonEncode(signInData));
 
-    return callApiWithErrorParser(dioCall).then(
-      (response) =>
-          SigninModel.fromJson(ApiResponseModel.fromJson(response.data).data),
-    );
+    try {
+      final response = await callApiWithErrorParser(dioCall);
+
+      // Check if this is a 202 response indicating PIN setup is required
+      if (response.statusCode == 202) {
+        // Extract signature from 202 response for PIN setup
+        String signature = '';
+        try {
+          final responseData = response.data;
+          print('🔍 [Google Sign-In] 202 Response data: $responseData');
+          print(
+            '🔍 [Google Sign-In] Response data type: ${responseData.runtimeType}',
+          );
+
+          if (responseData is Map<String, dynamic> &&
+              responseData.containsKey('data')) {
+            final dataField = responseData['data'];
+            print('🔍 [Google Sign-In] Data field: $dataField');
+            print(
+              '🔍 [Google Sign-In] Data field type: ${dataField.runtimeType}',
+            );
+
+            if (dataField is Map<String, dynamic>) {
+              print(
+                '🔍 [Google Sign-In] Data field keys: ${dataField.keys.toList()}',
+              );
+              // The signature is the key of the data map
+              signature = dataField.keys.first;
+              print('🔍 [Google Sign-In] Extracted signature: "$signature"');
+            } else if (dataField is String) {
+              // Fallback if it's directly a string
+              signature = dataField;
+              print(
+                '🔍 [Google Sign-In] Using data field as signature: "$signature"',
+              );
+            }
+          } else {
+            print(
+              '🔍 [Google Sign-In] Response data does not contain data field',
+            );
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('🚨 Error extracting signature from 202 response: $e');
+          }
+        }
+        print(
+          '🔍 [Google Sign-In] Final signature before exception: "$signature"',
+        );
+
+        // Throw custom exception with signature for PIN setup flow
+        print(
+          '🔍 [Google Sign-In] Creating NewUserRegistrationException with signature: "$signature"',
+        );
+        throw NewUserRegistrationException(
+          'User exists but PIN setup is required.',
+          signature,
+        );
+      }
+
+      // Normal 200 response - parse as SigninModel
+      return SigninModel.fromJson(
+        ApiResponseModel.fromJson(response.data).data,
+      );
+    } catch (e) {
+      // If it's already our custom exception, rethrow it
+      if (e is NewUserRegistrationException) {
+        rethrow;
+      }
+      // For all other errors, rethrow so they can be handled by the calling code
+      rethrow;
+    }
   }
 
   // Register Google user in backend
-  Future<void> _registerGoogleUser(
+  Future<String?> _registerGoogleUser(
     User user,
     String idToken,
     Map<String, dynamic> originalData,
@@ -225,7 +396,11 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
 
     try {
       var dioCall = dioClient.post(endpoint, data: jsonEncode(registerData));
-      await callApiWithErrorParser(dioCall);
+      final response = await callApiWithErrorParser(dioCall);
+
+      // Parse the response to get the signature
+      final signUpResponse = SignUpResponseModel.fromJson(response.data);
+      return signUpResponse.data?.signature;
     } catch (e) {
       // Handle registration errors locally to prevent server error page triggering
       if (kDebugMode) {
@@ -303,7 +478,7 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
   }
 
   @override
-  Future<void> signUp(Map<String, dynamic> data) async {
+  Future<SignUpResponseModel> signUp(Map<String, dynamic> data) async {
     var endpoint = "${DioProvider.baseUrl}/${AppEndpoints.signup}";
 
     // Check if this is a Firebase auth request (type 1 = Google)
@@ -344,7 +519,9 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
         }
 
         var dioCall = dioClient.post(endpoint, data: jsonEncode(googleData));
-        await callApiWithErrorParser(dioCall);
+        return callApiWithErrorParser(
+          dioCall,
+        ).then((response) => SignUpResponseModel.fromJson(response.data));
       } catch (e) {
         throw Exception('Firebase Google sign-up failed: ${e.toString()}');
       }
@@ -368,7 +545,22 @@ class AuthRemoteDataSourceImpl extends BaseRemoteSource
       }
 
       var dioCall = dioClient.post(endpoint, data: jsonEncode(signUpData));
-      await callApiWithErrorParser(dioCall);
+      return callApiWithErrorParser(
+        dioCall,
+      ).then((response) => SignUpResponseModel.fromJson(response.data));
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> setupPin(Map<String, dynamic> data) async {
+    var endpoint = "${DioProvider.baseUrl}/${AppEndpoints.setupPin}";
+    var dioCall = dioClient.patch(endpoint, data: jsonEncode(data));
+
+    try {
+      final response = await callApiWithErrorParser(dioCall);
+      return response.data;
+    } catch (e) {
+      rethrow;
     }
   }
 

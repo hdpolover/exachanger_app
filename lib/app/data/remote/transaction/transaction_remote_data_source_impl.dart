@@ -116,7 +116,7 @@ class TransactionRemoteDataSourceImpl extends BaseRemoteSource
   @override
   Future<bool> deleteTransaction(String transactionId) async {
     try {
-      final dioCall = dioClient.post('/transaction/delete/$transactionId');
+      final dioCall = dioClient.delete('/transaction/$transactionId');
       return callApiWithErrorParser(dioCall).then((response) {
         return response.statusCode == 200;
       });

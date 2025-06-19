@@ -197,15 +197,25 @@ class SignInView extends BaseView<SignInController> {
                 barrierDismissible: false,
               );
 
-              // Prepare Google sign-in data - this will use Firebase + API /auth/sign-up endpoint
+              // Prepare Google sign-in data
+              // The flow will:
+              // 1. Authenticate with Firebase Google Sign-In
+              // 2. Try to sign in to our backend server
+              // 3. If user not registered in our server, register them
+              // 4. Then sign in after registration
               Map<String, dynamic> data = {
-                'email': '', // Will be filled by Firebase
+                'email': '', // Will be filled by Firebase authentication
                 'password': '', // Not needed for Google sign-in
                 'device_token': 'device_token_google',
-                'type': 1, // 1 for Google sign-in
+                'type': 1, // 1 for Google sign-in type
               };
 
-              // Call the controller to handle Google sign-in
+              // Call the controller to handle Google sign-in flow
+              // This will handle the complete flow including:
+              // - Firebase authentication
+              // - Backend sign-in attempt
+              // - Auto-registration if needed
+              // - Final sign-in after registration
               controller.doSignIn(data);
             },
           ),

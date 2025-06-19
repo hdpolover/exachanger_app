@@ -38,51 +38,57 @@ class SignUpView extends BaseView<SignUpController> {
   PreferredSizeWidget appBar(BuildContext context) {
     return AppBar(
       leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.black),
+        icon: Icon(Icons.arrow_back, color: AppColors.textColorPrimary),
         onPressed: () => Get.back(),
       ),
       centerTitle: false,
       elevation: 0,
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: AppColors.colorWhite,
+      surfaceTintColor: AppColors.colorWhite,
     );
   }
 
   @override
   Widget body(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Sign Up', style: titleTextStyle),
-            const SizedBox(height: 4),
-            Text(
-              'Create account and happy transaction!',
-              style: regularBodyTextStyle.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 16),
-            _signUpForm(context),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Already have account? ', style: regularBodyTextStyle),
-                InkWell(
-                  onTap: () => Get.toNamed(Routes.SIGN_IN),
-                  child: Text(
-                    'Sign in',
-                    style: regularBodyTextStyle.copyWith(
-                      color: AppColors.colorPrimary,
-                      fontWeight: FontWeight.bold,
+    return Container(
+      color: AppColors.colorWhite,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppValues.margin_20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: AppValues.halfPadding),
+              Text('Sign Up', style: titleTextStyle),
+              SizedBox(height: AppValues.halfPadding),
+              Text(
+                'Create account and happy transaction!',
+                style: regularBodyTextStyle.copyWith(
+                  color: AppColors.textColorSecondary,
+                ),
+              ),
+              SizedBox(height: AppValues.largePadding),
+              _signUpForm(context),
+              SizedBox(height: AppValues.margin_20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Already have account? ', style: regularBodyTextStyle),
+                  InkWell(
+                    onTap: () => Get.toNamed(Routes.SIGN_IN),
+                    child: Text(
+                      'Sign in',
+                      style: regularBodyTextStyle.copyWith(
+                        color: AppColors.colorPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppValues.largePadding),
-          ],
+                ],
+              ),
+              SizedBox(height: AppValues.largePadding),
+            ],
+          ),
         ),
       ),
     );
@@ -104,7 +110,7 @@ class SignUpView extends BaseView<SignUpController> {
             prefixIcon: Icon(Icons.person_outline),
             validator: controller.validateFullName,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppValues.padding),
           CustomTextFormField(
             controller: emailController,
             labelText: 'Email',
@@ -113,31 +119,39 @@ class SignUpView extends BaseView<SignUpController> {
             prefixIcon: Icon(Icons.mail_outline),
             validator: controller.validateEmail,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppValues.padding),
           Text(
             'Phone Number',
             style: regularBodyTextStyle.copyWith(
-              color: Colors.black,
+              color: AppColors.textColorPrimary,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppValues.halfPadding),
           IntlPhoneField(
             controller: phoneController,
             decoration: InputDecoration(
               hintText: '+1 2345 678 4321',
-              hintStyle: regularBodyTextStyle.copyWith(color: Colors.grey),
+              hintStyle: regularBodyTextStyle.copyWith(
+                color: AppColors.textColorSecondary,
+              ),
+              filled: true,
+              fillColor: AppColors.pageBackground,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey),
+                borderRadius: BorderRadius.circular(AppValues.radius_12),
+                borderSide: BorderSide(color: AppColors.lightGreyColor),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey),
+                borderRadius: BorderRadius.circular(AppValues.radius_12),
+                borderSide: BorderSide(color: AppColors.lightGreyColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppValues.radius_12),
                 borderSide: BorderSide(color: AppColors.colorPrimary),
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppValues.radius_12,
+                vertical: AppValues.radius_12,
               ),
             ),
             initialCountryCode: 'US',
@@ -145,7 +159,7 @@ class SignUpView extends BaseView<SignUpController> {
               phoneNumber.value = phone.completeNumber;
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppValues.padding),
           CustomTextFormField(
             controller: passwordController,
             labelText: 'Password',
@@ -154,7 +168,7 @@ class SignUpView extends BaseView<SignUpController> {
             prefixIcon: Icon(Icons.lock_outline),
             validator: controller.validatePassword,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppValues.padding),
           CustomTextFormField(
             controller: referralCodeController,
             labelText: 'Referral Code (Optional)',
@@ -162,7 +176,7 @@ class SignUpView extends BaseView<SignUpController> {
             prefixIcon: Icon(Icons.card_giftcard_outlined),
             validator: null, // Optional field
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppValues.padding),
           Obx(
             () => Row(
               children: [
@@ -177,15 +191,14 @@ class SignUpView extends BaseView<SignUpController> {
                   child: RichText(
                     text: TextSpan(
                       style: regularBodyTextStyle.copyWith(
-                        color: Colors.black,
-                        fontSize: 14,
+                        color: AppColors.textColorSecondary,
                       ),
                       children: [
                         TextSpan(text: 'I agree to the company '),
                         TextSpan(
                           text: 'Term of Service',
                           style: regularBodyTextStyle.copyWith(
-                            color: Colors.black,
+                            color: AppColors.textColorPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -193,7 +206,7 @@ class SignUpView extends BaseView<SignUpController> {
                         TextSpan(
                           text: 'Privacy Policy',
                           style: regularBodyTextStyle.copyWith(
-                            color: Colors.black,
+                            color: AppColors.textColorPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -204,16 +217,18 @@ class SignUpView extends BaseView<SignUpController> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: AppValues.largePadding),
           CustomButton(label: "Sign Up", onPressed: () => _submit(context)),
-          const SizedBox(height: 16),
+          SizedBox(height: AppValues.padding),
           Center(
             child: Text(
               'or',
-              style: regularBodyTextStyle.copyWith(color: Colors.grey),
+              style: regularBodyTextStyle.copyWith(
+                color: AppColors.textColorSecondary,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppValues.padding),
           CustomOutlinedButton(
             label: "Sign up with Google",
             icon: Image.asset(

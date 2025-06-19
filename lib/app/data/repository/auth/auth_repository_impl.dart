@@ -1,4 +1,5 @@
 import 'package:exachanger_get_app/app/data/models/signin_model.dart';
+import 'package:exachanger_get_app/app/data/models/signup_response_model.dart';
 import 'package:exachanger_get_app/app/data/remote/auth/auth_remote_data_source.dart';
 import 'package:exachanger_get_app/app/data/repository/auth/auth_repository.dart';
 import 'package:get/get.dart';
@@ -14,8 +15,13 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUp(Map<String, dynamic> data) {
+  Future<SignUpResponseModel> signUp(Map<String, dynamic> data) {
     return _remoteSource.signUp(data);
+  }
+
+  @override
+  Future<Map<String, dynamic>> setupPin(Map<String, dynamic> data) {
+    return _remoteSource.setupPin(data);
   }
 
   @override
